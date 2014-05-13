@@ -134,13 +134,98 @@ class Scanner
 
     Token tok = Token.ERR; // or unknown token
     switch(c) {
-      case '+': tok = Token.ADD; break;
+      case '+':
+          if (HasNext() && PeekChar() == '=') {
+              PopChar(); // eat the '=' too
+              tok = Token.ADDA;
+          } else {
+              tok = Token.ADD;
+          }
+      break;
       case '/': tok = Token.DIV; break;
+      case '=':
+          if (HasNext() && PeekChar() == '=') {
+              PopChar(); // eat the '=' too
+              tok = Token.EQ;
+          } else {
+              tok = Token.ASSIGN;
+          }
+      break;
+      default : 
+      string tokentext = "";
+      if (char.IsLetter(c)) {
+          // read identifier
+          tokentext += c;
+          while (HasNext()) {
+              c = PeekChar();
+              if (char.IsLetterOrDigit(c) || c == '_') {
+                  PopChar();
+                  tokentext += c;
+              } else {
+                  break;
+              }
+          }
 
-      // TODO : add token discovery here, may have to
-      //        call other methods
-
-      default : break;
+          // check for keywords and fall back to identifier
+          if (tokentext == "if") {
+               tok = Token.KWDIF;
+          } else if (tokentext == "goto") {
+               tok = Token.KWDGOTO;
+          } else {
+               tok = Token.ID;
+          }
+      } else if (char.IsDigit(c)) {
+          // read number
+          bool isFloating = false;
+          int numericalBase = 10;
+          tokentext += c;
+          while (HasNext()) {
+              c = PeekChar();
+              if (c == '.') {
+                  PopChar();
+                  tokentext += c;
+                  if (isFloating) {
+                      tok = Token.ERR;
+                      break;
+                  } else {
+                      isFloating = true;
+                  }
+              } else if (tokentext.Length == 1
+                  && tokentext[0] == '0'
+                  && (c == 'x' || c == 'X')) {
+                  PopChar();
+                  tokentext += c;
+                  numericalBase = 16;
+              } else if (tokentext.Length == 1
+                  && tokentext[0] == '0'
+                  && c == '0') {
+                  PopChar(); 
+                  tokentext += c;
+                  numericalBase = 8;
+              } else if (numericalBase == 16
+                  && ((c >= 'a' && c <= 'f')
+                      || (c >= 'A' && c <= 'F')
+                      || (c >= '0' && c <= '9'))) {
+                  PopChar();
+                  tokentext += c;
+              } else if (numericalBase == 8
+                  && (c >= '0' && c <= '7')) {
+                  PopChar();
+                  tokentext += c;
+              } else if (numericalBase == 10
+                  && (c >= '0' && c <= '9')) {
+                  PopChar();
+                  tokentext += c;
+              } else if (isFloating) {
+                  tok = Token.FLT;
+                  break;
+              } else {
+                  tok = Token.INT;
+                  break;
+              }
+          }
+      }
+      break;
     }
     // this information is necessary for identifiers or integers
     // but is a bit expensive for keywords, and known symbols

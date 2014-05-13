@@ -6,6 +6,6 @@ a += d
 
 // the following is a little more difficult
 // uncomment the next line
-// if foo1 == 19
-//   xy += 1.23
+if foo1 == 19
+   xy += 1.23
 
