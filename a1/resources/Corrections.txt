@@ -1,0 +1,21 @@
+Corrections / Clarifications for Assignment 1
+
+
+1. The grammar included in the CbLangSpec.pdf document contained two errors.
+   *  The grammar rule for ConstDecl should not include the keyword "static".
+      Please delete that keyword from the rule's righthand side.
+   *  The nonterminal symbol Factor should have one more alternative listed.
+      Please add the additional alternative: charConst
+
+2. The document says that the /* ... */  form of comment can be nested.
+   The Microsoft C# compiler does not permit this nesting of comments.
+   However, it is fun and a good exercise in using gplex, so our Cb compiler
+   will permit such nesting even if it's not supported by C# compilers.
+
+---
+
+The Cb Language Specification document has been updated to incorporate these
+corrections.
+
+This document will grow if and when needed!
+
