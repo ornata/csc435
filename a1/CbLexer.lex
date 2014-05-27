@@ -9,6 +9,8 @@
   public StringBuilder str = new StringBuilder("");
 
   public int lineNum = 1;
+  
+  public int nesting = 0;
 
   public int LineNumber { get{ return lineNum; } }
 
@@ -40,12 +42,15 @@ COLON :
 {WS}+ {}
 
 // Handle comments
-"/*" { BEGIN(COMMENT); }
+"/*" { BEGIN(COMMENT); nesting = 0; }
+<COMMENT>"/*" { nesting++; }
 <COMMENT>[^*\n]* {} // consume anything that isn't a *
 <COMMENT>"*"+[^*/\n]* {} // Found a * not followed by a /
 <COMMENT>\n { lineNum = lineNum+1; } //keep track of line number
-<COMMENT>"*"+"/" { BEGIN(INITIAL); }
+<COMMENT>"*"+"/" { nesting = nesting-1; if(nesting <= 0){ BEGIN(INITIAL); } }
+
 "//" {BEGIN(SHORTCOMMENT);}
+<SHORTCOMMENT>.* {} // consume all non-newline characters
 <SHORTCOMMENT>"\n" {BEGIN(INITIAL);}
 
 // Handle integers and floats

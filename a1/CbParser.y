@@ -10,7 +10,10 @@
 %visibility public
 
 // Define yylval so we can recover type info
-%union { public string strVal; }
+%union { 
+    public string strVal;
+    public int intVal;
+    public char charVal; }
 
 // All tokens which can be used as operators in expressions
 // they are ordered by precedence level (lowest first)
@@ -31,7 +34,7 @@
 %token      Kwd_new Kwd_public Kwd_return Kwd_static Kwd_string
 %token      Kwd_override Kwd_virtual Kwd_null
 %token      Kwd_using Kwd_void Kwd_while
-%token      PLUSPLUS MINUSMINUS Ident FloatConst IntConst
+%token      PLUSPLUS MINUSMINUS Ident FloatConst IntConst CharConst
 
 %start Program
 
@@ -94,11 +97,11 @@ MemberDecl:     ConstDecl
 /* ConstDecl
 ***************************
 *
-* "public" "static" "const" Type ident "=" (number|stringConst) ";"
+* "public" "const" Type ident "=" (number|stringConst) ";"
 *
 ********************************************/
 
-ConstDecl:      Kwd_public Kwd_static Kwd_const Type Ident '=' InitVal ';'
+ConstDecl:      Kwd_public Kwd_const Type Ident '=' InitVal ';'
         ;
 
 InitVal:        Number
@@ -337,6 +340,7 @@ MulList:        /* empty */
 *
 *   Designator ["(" [ActPars] ")"]
 * | intConst
+* | charConst
 * | StringConst ["." ident]
 * | "new" ident "[" Expr "]"
 * | "new" ident "(" ")"
@@ -348,6 +352,7 @@ MulList:        /* empty */
 
 Factor:         Designator OptParams
         |       IntConst
+        |       CharConst
         |       StringConst OptIdent
         |       Kwd_new Ident '[' Expr ']'
         |       Kwd_new Ident '(' ')'
