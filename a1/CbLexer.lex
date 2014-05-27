@@ -4,9 +4,6 @@
 %x STRING
 %x COMMENT
 %x SHORTCOMMENT
-%s PAREN
-%s SQUAREBRACE
-%s BRACE
 
 %{
   public StringBuilder str = new StringBuilder("");
@@ -43,8 +40,11 @@ COLON :
 {WS}+ {}
 
 // Handle comments
-"/*" {BEGIN(COMMENT);}
-<COMMENT>"*/" {BEGIN(INITIAL);}
+"/*" { BEGIN(COMMENT); }
+<COMMENT>[^*\n]* {} // consume anything that isn't a *
+<COMMENT>"*"+[^*/\n]* {} // Found a * not followed by a /
+<COMMENT>\n { lineNum = lineNum+1; } //keep track of line number
+<COMMENT>"*"+"/" { BEGIN(INITIAL); }
 "//" {BEGIN(SHORTCOMMENT);}
 <SHORTCOMMENT>"\n" {BEGIN(INITIAL);}
 
