@@ -1,3 +1,4 @@
+.DS_Store
 CbLexer.cs
 CbParser.conflicts
 CbParser.cs
@@ -5,4 +6,4 @@ cbc.exe
 submission.zip
 *.swp
 tokens.txt
-~*
+*~
