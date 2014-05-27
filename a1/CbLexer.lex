@@ -9,7 +9,26 @@
 %s BRACE
 
 %{
-public StringBuilder str = new StringBuilder("");
+  public StringBuilder str = new StringBuilder("");
+
+  public int lineNum = 1;
+
+  public int LineNumber { get{ return lineNum; } }
+
+  public override void yyerror( string msg, params object[] args ) {
+    Console.WriteLine("{0}: ", lineNum);
+    if (args == null || args.Length == 0) {
+      Console.WriteLine("{0}", msg);
+    }
+    else {
+      Console.WriteLine(msg, args);
+    }
+  }
+
+  public void yyerror( int lineNum, string msg, params object[] args ) {
+    Console.WriteLine("{0}: {1}", msg, args);
+  }
+
 %}
 
 ID [a-zA-Z][a-zA-Z0-9_]*

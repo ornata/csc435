@@ -8,27 +8,28 @@ class cbc
     public bool TokensEnabled = false;
     public string InputFilename;
 
-	public void Run()
-	{
-		Scanner sc = new Scanner(new FileStream(InputFilename, FileMode.Open));
-		Parser p = new Parser(InputFilename, sc);
+    public void Run()
+    {
+        Scanner sc = new Scanner(new FileStream(InputFilename, FileMode.Open));
+        Parser p = new Parser(InputFilename, sc);
 
-		if (p.Parse())
-		{
-			System.Console.WriteLine("Parse successful!");
-		}
-		else
-		{
-			System.Console.WriteLine("Parse unsuccessful.");
-		}
+        if (p.Parse())
+        {
+            System.Console.WriteLine("{0} lines from file {1} were parsed successfully.",
+                                     sc.LineNumber, InputFilename);
+        }
+        else
+        {
+            System.Console.WriteLine("Failed to parse {0}", InputFilename);
+        }
 
-	}
+    }
 
     public static int Main(string[] args)
     {
-		bool debugEnabled = false;
-		bool tokensEnabled = false;
-		string inputFilename = null;
+        bool debugEnabled = false;
+        bool tokensEnabled = false;
+        string inputFilename = null;
 
         for (int arg = 0; arg < args.Length; arg++)
         {
@@ -54,13 +55,13 @@ class cbc
             }
         }
 
-		cbc cbcInstance = new cbc();
-		cbcInstance.DebugEnabled = debugEnabled;
-		cbcInstance.TokensEnabled = tokensEnabled;
-		cbcInstance.InputFilename = inputFilename;
+        cbc cbcInstance = new cbc();
+        cbcInstance.DebugEnabled = debugEnabled;
+        cbcInstance.TokensEnabled = tokensEnabled;
+        cbcInstance.InputFilename = inputFilename;
 
-		cbcInstance.Run();
+        cbcInstance.Run();
 
-		return 0;
+        return 0;
     }
 }
