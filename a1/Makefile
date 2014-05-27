@@ -27,5 +27,8 @@ cbc.exe: cbc.cs CbParser.cs CbLexer.cs ShiftReduceParser.cs
 submission.zip: cbc.cs CbParser.cs CbLexer.cs TestProgram.cs
 	zip submission cbc.cs CbParser.cs CbLexer.cs TestProgram.cs
 
+# run once with tokens output and once without
 test: cbc.exe TestProgram.cs
 	$(MONO) ./cbc.exe -tokens -debug TestProgram.cs
+	cat tokens.txt
+	$(MONO) ./cbc.exe -debug TestProgram.cs

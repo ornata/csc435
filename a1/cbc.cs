@@ -11,18 +11,34 @@ class cbc
     public void Run()
     {
         Scanner sc = new Scanner(new FileStream(InputFilename, FileMode.Open));
-        Parser p = new Parser(InputFilename, sc);
 
-        if (p.Parse())
+        if (TokensEnabled)
         {
-            System.Console.WriteLine("{0} lines from file {1} were parsed successfully.",
-                                     sc.LineNumber, InputFilename);
+            using (StreamWriter tokens = new StreamWriter("tokens.txt"))
+            {
+                int tok;
+                for (tok = sc.yylex(); tok > (int) Tokens.EOF; tok = sc.yylex())
+                {
+                    tokens.WriteLine("{0}, text = {1}",
+                                     Enum.GetName(typeof(Tokens), tok),
+                                     sc.yytext);
+                }
+            }
         }
         else
         {
-            System.Console.WriteLine("Failed to parse {0}", InputFilename);
-        }
+            Parser p = new Parser(InputFilename, sc);
 
+            if (p.Parse())
+            {
+                Console.WriteLine("{0} lines from file {1} were parsed successfully.",
+                                         sc.LineNumber, InputFilename);
+            }
+            else
+            {
+                Console.WriteLine("Failed to parse {0}", InputFilename);
+            }
+        }
     }
 
     public static int Main(string[] args)
@@ -49,7 +65,7 @@ class cbc
                 }
                 else
                 {
-                    System.Console.WriteLine("No arguments may follow the first filename.");
+                    Console.WriteLine("No arguments may follow the first filename.");
                     return 1;
                 }
             }
