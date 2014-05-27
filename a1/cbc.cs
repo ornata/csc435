@@ -1,4 +1,5 @@
 using FrontEnd;
+using System.IO;
 using System;
 
 class cbc
@@ -9,7 +10,7 @@ class cbc
 
 	public void Run()
 	{
-		Scanner sc = new Scanner();
+		Scanner sc = new Scanner(new FileStream(InputFilename, FileMode.Open));
 		Parser p = new Parser(InputFilename, sc);
 
 		if (p.Parse())
