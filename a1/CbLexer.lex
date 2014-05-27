@@ -1,6 +1,5 @@
 %namespace FrontEnd
-%using System;
-%using System.Text;
+
 %tokentype Tokens
 %x STRING
 %x COMMENT
@@ -10,12 +9,11 @@
 %s BRACE
 
 %{
-StringBuilder str = new StringBuilder("");
-
+public StringBuilder str = new StringBuilder("");
 %}
 
-ID [a-zA-Z_][a-zA-Z0-9_]*
-NUMBER [0-9][0-9]*
+ID [a-zA-Z][a-zA-Z0-9_]*
+NUMBER [0-9]+
 WS [ \t\n\r]
 OPERATOR [><+\-*/%=]
 SEMI \;
@@ -59,8 +57,6 @@ virtual { return (int)Tokens.Kwd_virtual; }
 override { return (int)Tokens.Kwd_override; }
 
 using { return (int)Tokens.Kwd_using; }
-
-out { return (int)Tokens.Kwd_out; }
 
 const {return (int)Tokens.Kwd_const; }
 
