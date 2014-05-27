@@ -10,7 +10,10 @@
 %visibility public
 
 // Define yylval so we can recover type info
-%union { public string strVal; }
+%union { 
+    public string strVal;
+    public int intVal;
+    public char charVal; }
 
 // All tokens which can be used as operators in expressions
 // they are ordered by precedence level (lowest first)
