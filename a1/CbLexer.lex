@@ -50,6 +50,7 @@ COLON :
 <COMMENT>"*"+"/" { nesting = nesting-1; if(nesting <= 0){ BEGIN(INITIAL); } }
 
 "//" {BEGIN(SHORTCOMMENT);}
+<SHORTCOMMENT>.* {} // consume all non-newline characters
 <SHORTCOMMENT>"\n" {BEGIN(INITIAL);}
 
 // Handle integers and floats
