@@ -13,7 +13,7 @@ GPLEX = ../gplex-distro-1.2.1/binaries/gplex.exe
 all: cbc.exe submission.zip
 
 clean:
-	rm -f CbLexer.cs CbParser.cs cbc.exe submission.zip tokens.txt
+	rm -f CbLexer.cs CbParser.cs cbc.exe submission.zip tokens.txt CbLexer.lst CbParser.lst
 
 CbLexer.cs: CbLexer.lex
 	$(MONO) $(GPLEX) CbLexer.lex

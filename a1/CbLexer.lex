@@ -2,20 +2,19 @@
 
 %tokentype Tokens
 %x STRING
-%x COMMENT
-%x SHORTCOMMENT
+%x BLOCKCOMMENT
 
 %{
-  public StringBuilder str = new StringBuilder("");
+  public StringBuilder currentStringLiteral;
 
-  public int lineNum = 1;
+  private int currentLineNumber = 1;
   
-  public int nesting = 0;
+  private int blockCommentNesting = 0;
 
-  public int LineNumber { get{ return lineNum; } }
+  public int LineNumber { get{ return currentLineNumber; } }
 
   public override void yyerror( string msg, params object[] args ) {
-    Console.WriteLine("{0}: ", lineNum);
+    Console.WriteLine("{0}: ", LineNumber);
     if (args == null || args.Length == 0) {
       Console.WriteLine("{0}", msg);
     }
@@ -30,116 +29,91 @@
 
 %}
 
-ID [a-zA-Z][a-zA-Z0-9_]*
-NUMBER [0-9]+
-WS [ \t\n\r]
-OPERATOR [><+\-*/%=]
-SEMI \;
-COLON :
+space    [ \t]
+id       [a-zA-Z][a-zA-Z0-9_]*
+number   [0-9]+
+opchar   [><+\-*/%=.,()\[\]{};:]
+
 %%
 
-// Handle whitespace
-{WS}+ {}
+{space}  {}
+"\n\r"   {currentLineNumber++;}
+\n       {currentLineNumber++;}
 
-// Handle comments
-"/*" { BEGIN(COMMENT); nesting = 0; }
-<COMMENT>"/*" { nesting++; }
-<COMMENT>[^*\n]* {} // consume anything that isn't a *
-<COMMENT>"*"+[^*/\n]* {} // Found a * not followed by a /
-<COMMENT>\n { lineNum = lineNum+1; } //keep track of line number
-<COMMENT>"*"+"/" { nesting = nesting-1; if(nesting <= 0){ BEGIN(INITIAL); } }
+// Just read the whole line when a single-line comment comes in
+"//".*                     {}
 
-"//" {BEGIN(SHORTCOMMENT);}
-<SHORTCOMMENT>.* {} // consume all non-newline characters
-<SHORTCOMMENT>"\n" {BEGIN(INITIAL);}
+// When a block comment begins, enter the BLOCKCOMMENT state with nesting level 1.
+"/*"                       {BEGIN(BLOCKCOMMENT);
+                            blockCommentNesting = 1;}
 
-// Handle integers and floats
-{NUMBER} { return (int)Tokens.IntConst; }
-{NUMBER}"."{NUMBER} { return (int)Tokens.FloatConst; }
+<BLOCKCOMMENT>[^*/\n]*     {} // consume anything that isn't a * or a / or a newline
+<BLOCKCOMMENT>\n           {currentLineNumber++;} // must keep track of line count in this state too.
+<BLOCKCOMMENT>"/*"         {blockCommentNesting++;} // In the BLOCKCOMMENT state, seeing more instances of /* increases the nesting.
+// at the end of every comment, decrease the nesting count and check if we need to go back to the initial state.
+<BLOCKCOMMENT>"*/"         {blockCommentNesting--;
+                            if (blockCommentNesting <= 0) {
+                                BEGIN(INITIAL);
+                            }}
+// we've reached this point if we saw a * or / character but noticed it was neither /* nor */. just eat it.
+<BLOCKCOMMENT>[*/]         {}
 
 // Handle keywords
-if { return (int)Tokens.Kwd_if; }
+if       {return (int)Tokens.Kwd_if;}
+while    {return (int)Tokens.Kwd_while;}
+else     {return (int)Tokens.Kwd_else;}
+break    {return (int)Tokens.Kwd_break;}
+return   {return (int)Tokens.Kwd_return;}
+class    {return (int)Tokens.Kwd_class;}
+public   {return (int)Tokens.Kwd_public;}
+static   {return (int)Tokens.Kwd_static;}
+void     {return (int)Tokens.Kwd_void;}
+virtual  {return (int)Tokens.Kwd_virtual;}
+override {return (int)Tokens.Kwd_override;}
+using    {return (int)Tokens.Kwd_using;}
+const    {return (int)Tokens.Kwd_const;}
+int      {return (int)Tokens.Kwd_int;}
+new      {return (int)Tokens.Kwd_new;}
+string   {return (int)Tokens.Kwd_string;}
+char     {return (int)Tokens.Kwd_char;}
+null     {return (int)Tokens.Kwd_null;}
 
-while { return (int)Tokens.Kwd_while; }
+{id}     {return (int)Tokens.Ident;}
+{number} {return (int)Tokens.IntConst;}
 
-else { return (int)Tokens.Kwd_else; }
+// Plusplus, minusminus, and other multi-character operators.
+"++" {return (int)Tokens.PLUSPLUS;}
+"--" {return (int)Tokens.MINUSMINUS;}
+"&&" {return (int)Tokens.ANDAND;}
+"||" {return (int)Tokens.OROR;}
+"<=" {return (int)Tokens.LTEQ;}
+">=" {return (int)Tokens.GTEQ;}
+"==" {return (int)Tokens.EQEQ;}
+"!=" {return (int)Tokens.NOTEQ;}
 
-break { return (int)Tokens.Kwd_break; }
+{opchar} {return (int)(yytext[0]);}
 
-return { return (int)Tokens.Kwd_return; }
+// Literal character
+\'.\' {yylval.charVal = yytext[1];
+       return (int)Tokens.CharConst;}
 
-class { return (int)Tokens.Kwd_class; }
-
-public { return (int)Tokens.Kwd_public; }
-
-static { return (int)Tokens.Kwd_static; }
-
-void { return (int)Tokens.Kwd_void; }
-
-virtual { return (int)Tokens.Kwd_virtual; }
-
-override { return (int)Tokens.Kwd_override; }
-
-using { return (int)Tokens.Kwd_using; }
-
-const {return (int)Tokens.Kwd_const; }
-
-int { return (int)Tokens.Kwd_int; }
-
-new { return (int)Tokens.Kwd_new; }
-
-string { return (int)Tokens.Kwd_string; }
-
-char { return (int)Tokens.Kwd_char; }
-
-null { return (int)Tokens.Kwd_null; }
-
-// Plusplus, minus minus
-"++" { return (int)Tokens.PLUSPLUS; }
-
-"--" { return (int)Tokens.MINUSMINUS; }
-
-// Identifiers
-{ID} { return (int)Tokens.Ident; }
-
-{OPERATOR} { return (int)(yytext[0]); } 
-
-// Strings
-\" { BEGIN(STRING);}
-
-<STRING>\" { Console.WriteLine(str);
-  yylval.strVal = str.ToString();
-             str = new StringBuilder("");
-             BEGIN(INITIAL);
-             return (int)Tokens.StringConst; }
-
-<STRING>\n { yyerror("String constant not terminated by quote."); }
-<STRING>\\n { str.Append("\n"); }
-<STRING>\\t { str.Append("\t"); }
-<STRING>\\r { str.Append("\r"); }
-<STRING>\\b { str.Append("\b"); }
-<STRING>\\f { str.Append("\f"); }
-<STRING>\\(.|\n) { str.Append(yytext[0]); }
-<STRING>[^\\\n\"]+ { str.Append(yytext); }
-
-
-"&&"|"||"|"." { return (int)(yytext[0]); }
-
-"<="|">="|"=="|"!=" { return (int)(yytext[0]); }
-
-// Braces
-"(" {return (int)(yytext[0]);}
-")" {return (int)(yytext[0]);}
-
-"[" {return (int)(yytext[0]);}
-"]" {return (int)(yytext[0]);}
-
-"{" {return (int)(yytext[0]);}
-"}" {return (int)(yytext[0]);} 
-
-{SEMI}|{COLON} { return (int)(yytext[0]); }
-
-<<EOF>> { return 0; }
+// Upon seeing the start of a literal string, enter the STRING state, where the string's contents are accumulated.
+\"                 {currentStringLiteral = new StringBuilder("");
+                    BEGIN(STRING);}
+// This rule handles seeing the ending quote character. It switches back to the initial state.
+<STRING>\"         {yylval.strVal = currentStringLiteral.ToString();
+                    BEGIN(INITIAL);
+                    return (int)Tokens.StringConst;}
+<STRING>\n         {yyerror("String constant not terminated by quote.");
+                    currentLineNumber++;}
+// handle escaped characters inside the string literal
+// note: strangely, spec does not say that we should allow backslash to escape itself.
+<STRING>\\n        {currentStringLiteral.Append("\n");}
+<STRING>\\t        {currentStringLiteral.Append("\t");}
+<STRING>\\r        {currentStringLiteral.Append("\r");}
+<STRING>\\\"       {currentStringLiteral.Append("\"");}
+<STRING>\\\'       {currentStringLiteral.Append("\'");}
+<STRING>[^\\\n\"]+ {currentStringLiteral.Append(yytext);}
 
 . { yyerror("Illegal character ({0})", yytext); }
 

@@ -17,7 +17,7 @@ class cbc
             using (StreamWriter tokens = new StreamWriter("tokens.txt"))
             {
                 int tok;
-                for (tok = sc.yylex(); tok > (int) Tokens.EOF; tok = sc.yylex())
+                for (tok = sc.yylex(); tok != (int) Tokens.EOF; tok = sc.yylex())
                 {
                     tokens.WriteLine("{0}, text = {1}",
                                      Enum.GetName(typeof(Tokens), tok),

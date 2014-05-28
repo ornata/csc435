@@ -12,21 +12,17 @@
 // Define yylval so we can recover type info
 %union { 
     public string strVal;
-    public int intVal;
-    public char charVal; }
+    public int    intVal;
+    public char   charVal;
+}
 
-// All tokens which can be used as operators in expressions
-// they are ordered by precedence level (lowest first)
-%right      '='
-%left       OROR
-%left       ANDAND
-%nonassoc   EQEQ NOTEQ
-%nonassoc   '>' GTEQ '<' LTEQ
-%left       '+' '-'
-%left       '*' '/' '%'
-%left       UMINUS
+// solves if-then-else ambiguity
+%nonassoc IFX
+%nonassoc Kwd_else
 
 %token <strVal> StringConst
+%token <intVal> IntConst
+%token <charVal> CharConst
 
 // All other named tokens (i.e. the single character tokens are omitted)
 // The order in which they are listed here does not matter.
@@ -34,7 +30,8 @@
 %token      Kwd_new Kwd_public Kwd_return Kwd_static Kwd_string
 %token      Kwd_override Kwd_virtual Kwd_null
 %token      Kwd_using Kwd_void Kwd_while
-%token      PLUSPLUS MINUSMINUS Ident FloatConst IntConst CharConst
+%token      PLUSPLUS MINUSMINUS Ident
+%token      OROR ANDAND EQEQ NOTEQ GTEQ LTEQ
 
 %start Program
 
@@ -45,13 +42,6 @@
    *         PRODUCTION RULES AND ASSOCIATED SEMANTIC ACTIONS              *
    *                                                                       *
  ************************************************************************* */
-
-/* Program
-**********************
-*
-* {"using" ident ";"} ClassDecl {ClassDecl}
-* 
-********************************************/
 
 Program:        UsingList ClassList
         ;
@@ -64,73 +54,40 @@ ClassList:		ClassDecl ClassList
         |		ClassDecl
         ;
 
-/* ClassDecl
-***************************
-*
-* "class" ident [":" ident] "{" {MemberDecl} "}"
-*
-********************************************/
-
-ClassDecl:		Kwd_class OptColon '{' DeclList '}'
+ClassDecl:		Kwd_class Ident OptBase '{' MemberDeclList '}'
 	    ;
 
-OptColon: 		':' Ident 
+OptBase: 		':' Ident
         |  		/* empty */ 
         ;
 
-DeclList:       MemberDecl DeclList
+MemberDeclList: MemberDecl MemberDeclList
         |       /* empty */
         ;
-        
-/* MemberDecl
-***************************
-*
-* ConstDecl | FieldDecl | MethodDecl
-*
-********************************************/
 
 MemberDecl:     ConstDecl
         |       FieldDecl
         |       MethodDecl
         ;
 
-/* ConstDecl
-***************************
-*
-* "public" "const" Type ident "=" (number|stringConst) ";"
-*
-********************************************/
-
 ConstDecl:      Kwd_public Kwd_const Type Ident '=' InitVal ';'
         ;
 
-InitVal:        Number
+InitVal:        IntConst
         |       StringConst
         ;
 
-/* FieldDecl
-***************************
-*
-* "public" Type ident {"," ident} ";"
-*
-********************************************/
-
-FieldDecl:      Kwd_public Type Ident IdentList ';'
+FieldDecl:      Kwd_public Type IdentList ';'
         ;
 
-IdentList:      ',' Ident IdentList
-        |       /*empty*/
+IdentList:      IdentList ',' Ident
+        |       Ident
         ;
-
-/* MethodDecl
-***************************
-*
-* "public" ("static" | "virtual" | "override") ("void" | Type) ident
-* "("{FormalPars}")" Block
-*
-********************************************/
 
 MethodDecl:     Kwd_public MethodScope MethodType Ident '(' OptFormals ')' Block
+        ;
+
+LocalDecl:      Type IdentList ';'
         ;
 
 MethodScope:    Kwd_static
@@ -142,239 +99,98 @@ MethodType:     Kwd_void
         |       Type
         ;
 
-OptFormals:     /* empty */
-        |       FormalPars
+OptFormals:     FormalPars
+        |       /* empty */
         ;
 
-
-/* LocalDecl
-***************************
-*
-* Type ident {"," ident} ";"
-*
-********************************************/
-
-LocalDecl:      Type Ident IdentList ';'
+FormalPars:     FormalDecl
+        |       FormalPars ',' FormalDecl
         ;
-
-/* FormalPars
-***************************
-*
-* FormalDecl {"," FormalDecl}
-*
-********************************************/
-
-FormalPars:     FormalDecl FormalDeclList
-          ;
-        
-FormalDeclList: ',' FormalPars FormalDeclList
-	  |		/* empty */
-	  ;
-
-/* FormalDecl
-***************************
-*
-* Type ident
-*
-********************************************/
 
 FormalDecl:     Type Ident
         ;
 
-/* Type
-***************************
-*
-* (ident|"int"|"string"|"char")["[""]"]
-*
-********************************************/
-
-Type:			TypeName OptBraces
-        ;
-
-TypeName:       Ident
+Type:           Type '[' ']'
+        |       Ident
         |       Kwd_int
         |       Kwd_string
         |       Kwd_char
         ;
 
-OptBraces:     /*empty*/
-        |      '[' ']'
-        ;
-
-/* Statement
-***************************
-*
-*   Designator "=" Expr ";"
-* | "if" "(" Condition ")" Statement ["else" Statement]
-* | "while" "(" Condition ")" Statement
-* | "break" ";"
-* | "return" [Expr] ";"
-* | Designator "(" ActualPars ")" ";"
-* | Designator ("++" | "--") ";"
-* | Block
-* | ";"
-*
-********************************************/
-
 Statement:      Designator '=' Expr ';'
-        |       Kwd_if '(' Condition ')' Statement OptElsePart
+        |       Kwd_if '(' Condition ')' Statement %prec IFX // solves if-then-else ambiguity
+        |       Kwd_if '(' Condition ')' Statement Kwd_else Statement
         |       Kwd_while '(' Condition ')' Statement
         |       Kwd_break ';'
-        |       Kwd_return OptExpr ';'
-        |       Designator '(' ActPars ')' ';'
+        |       Kwd_return ';'
+        |       Kwd_return Expr ';'
+        |       Designator '(' OptActuals ')' ';'
         |       Designator PLUSPLUS ';'
         |       Designator MINUSMINUS ';'
         |       Block
         |       ';'
         ;
 
-
-OptActuals:     /* empty */
-        |       ActPars
-        ;
-
-OptElsePart:    Kwd_else Statement
+OptActuals:     ActPars
         |       /* empty */
         ;
-
-/* Block
-***************************
-*
-* "{" {LocalDecl | Statment} "}"
-*
-********************************************/
 
 Block:          '{' DeclsAndStmts '}'
         ;
 
-DeclsAndStmts:   /* empty */
-        |       DeclsAndStmts Statement
+DeclsAndStmts:  DeclsAndStmts Statement
         |       DeclsAndStmts LocalDecl
-        ;
-
-/* ActPars
-***************************
-*
-* Expr { "," Expr}
-*
-********************************************/
-
-ActPars:        Expr OptExpr
-        ;
-
-OptExpr:        /*empty*/
-        |       ',' Expr
-        ;
-
-/* Condition
-***************************
-*
-* CondTerm {"||" CondTerm}
-*
-********************************************/
-
-Condition:      CondTerm CondTermList
-        ;
-
-CondTermList:   /* empty */
-        |       OROR CondTerm CondTermList
-        ;
-
-/* CondTerm
-***************************
-*
-* CondFact {"&&" CondFact}
-*
-********************************************/
-
-CondTerm:       CondFact CondFactList
-        ;
-
-CondFactList:   /* empty */
-        |       ANDAND CondFact CondFactList
-        ;
-
-/* CondFact
-***************************
-*
-* EqFact EqOp EqFact
-*
-********************************************/
-
-CondFact:       EqFact EqOp EqFact
-        ;
-
-/* EqFact
-***************************
-*
-* Expr RelOp Expr
-* | ["+"|"-"] Term {Addop Term}
-*
-********************************************/
-
-EqFact:         Expr RelOp Expr
-        |       '+' Term TermList
-        |       '-' Term TermList
-        ;
-
-TermList:       AddOp Term TermList
         |       /* empty */
         ;
 
-/* Term
-***************************
-*
-* Factor {MulOp Factor}
-*
-********************************************/
-
-Term:           Factor MulList
+ActPars:        ActPars ',' Expr
+        |       Expr
         ;
 
-MulList:        /* empty */
-        |       MulOp Factor MulList 
+Condition:      CondTermList
         ;
 
-/* Factor
-***************************
-*
-*   Designator ["(" [ActPars] ")"]
-* | intConst
-* | charConst
-* | StringConst ["." ident]
-* | "new" ident "[" Expr "]"
-* | "new" ident "(" ")"
-* | "null"
-* | "(" Type ")" Factor
-* | "(" Expr ")"
-*
-********************************************/
+CondTermList:   CondTermList OROR CondTerm
+        |       CondTerm
+        ;
 
-Factor:         Designator OptParams
+CondTerm:       CondFactList
+        ;
+
+CondFactList:   CondFactList ANDAND CondFact
+        |       CondFact
+        ;
+
+CondFact:       EqFact EqOp EqFact
+        |       EqFact
+        ;
+
+EqFact:         Expr RelOp Expr
+        |       Expr
+        ;
+
+Expr:           Expr AddOp Term
+        |       Term
+        ;
+
+Term:           Term MulOp Factor
+        |       Factor
+        ;
+
+Factor:         Designator
+        |       Designator '(' OptActuals ')'
         |       IntConst
         |       CharConst
-        |       StringConst OptIdent
-        |       Kwd_new Ident '[' Expr ']'
-        |       Kwd_new Ident '(' ')'
+        |       StringConst
+        |       StringConst '.' Ident
+        |       Kwd_new Type '[' Expr ']'
+        |       Kwd_new Type '(' ')'
         |       Kwd_null
         |       '(' Type ')' Factor
         |       '(' Expr ')'
+        |       '-' Factor
+        |       '+' Factor
         ;
-
-OptParams:      '(' OptActuals ')'
-        |       /* empty */
-        ;
-
-OptIdent:       '.' Ident
-        |       /* empty */
-        ;
-
-/* Designator
-***************************
-*
-* ident {"." ident | "[" Expr "]"}
-*
-********************************************/
 
 Designator:     Ident Qualifiers
         ;
@@ -384,117 +200,23 @@ Qualifiers:     '.' Ident Qualifiers
         |       /* empty */
         ;
 
-/* EqOp
-***************************
-*
-* "==" | "!="
-*
-********************************************/
-
 EqOp:           EQEQ
         |       NOTEQ
         ;
 
-/* RelOp
-***************************
-*
-* ">" | ">=" | "<" | "<="
-*
-********************************************/
-
 RelOp:          '>'
-        |       '<'
         |       GTEQ
+        |       '<'
         |       LTEQ
         ;
-
-/* AddOp
-***************************
-*
-* "+" | "-"
-*
-********************************************/
 
 AddOp:          '+'
         |       '-'
         ;
 
-/* MulOp
-***************************
-*
-* "*" | "/" | "%"
-*
-********************************************/
-
 MulOp:          '*'
         |       '/'
         |       '%'
-        ;
-
-// Expr
-
-/*
-Expr:           Operation
-        ;
-
-Operation:      Item
-        |       Operation ANDAND Item {$$ = $1 && $3;}
-        |       Operation OROR Item {$$ = $1 || $3;}
-        |       Operation '>' Item {$$ = $1 > $3;}
-        |       Operation '<' Item {$$ = $1 < $3;}
-        |       Operation GTEQ Item {$$ = $1 >= $3;}
-        |       Operation LTEQ Item {$$ = $1 <= $3;}
-        |       Operation '+' Item {$$ = $1 + $3;}
-        |       Operation '-' Item {$$ = $1 - $3;}
-        |       Operation '*' Item {$$ = $1 * $3;}
-        |       Operation '/' Item {$$ = $1 / $3;}
-        |       Operation '%' Item {$$ = $1 % $3;}
-        |       '-' Operation %prec UMINUS {$$ = -$2;}
-        ;
-
-Item:           Atom
-        |       Designator
-        |       Designator '(' OptActuals ')'
-        ;
-
-Atom:           Number
-        |       StringConst
-        |       StringConst '.' Ident
-        |       Kwd_new Ident '(' ')'
-        |       Kwd_new Ident '[' Expr ']'
-        |       '(' Expr ')' {$$ = $2;}
-        ;
-
- */
-
-// We can have integers or floats...
-
-Number:         IntConst
-        |       FloatConst
-        ;
-
-Expr:           Expr OROR Expr
-        |       Expr ANDAND Expr
-        |       Expr EQEQ Expr
-        |       Expr NOTEQ Expr
-        |       Expr LTEQ Expr
-        |       Expr '<' Expr
-        |       Expr GTEQ Expr
-        |       Expr '>' Expr
-        |       Expr '+' Expr
-        |       Expr '-' Expr
-        |       Expr '*' Expr
-        |       Expr '/' Expr
-        |       Expr '%' Expr
-        |       '-' Expr %prec UMINUS
-        |       Designator
-        |       Designator '(' OptActuals ')'
-        |       Number
-        |       StringConst
-        |       StringConst '.' Ident // Ident must be "Length"
-        |       Kwd_new Ident '(' ')'
-        |       Kwd_new Ident '[' Expr ']'
-        |       '(' Expr ')'
         ;
 
 %%

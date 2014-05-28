@@ -76,7 +76,7 @@ class Algorithm
     /* nested comment test
         /*
         */
-        this should cause an error if nested comments don't work
+        sfthis should cause an error if nested comments don't work
         /*
         */
     */
@@ -115,7 +115,7 @@ class Algorithm
     public static void PrecedenceTest()
     {
         int x;
-        x = 2 + 5 * 3 * (2 -+ 3) + 3 % 5 / 3;
+        x = 2 + 5 * 3 * (2 - +3) + 3 % 5 / 3;
     }
 
     public static void LeadingZeroTest()
