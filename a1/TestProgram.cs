@@ -129,6 +129,11 @@ class Lists {
     public const string PromptText = "enter some text =>";
 
     public static void Main() {
+        // testing ambiguity of "ident["
+        List[] listArray;
+        listArray = new List[10];
+        listArray[0] = new List();
+
         List ccc;
         string s;
         Console.WriteLine(PromptText);

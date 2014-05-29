@@ -74,6 +74,7 @@ ConstDecl:      Kwd_public Kwd_const Type Ident '=' InitVal ';'
         ;
 
 InitVal:        IntConst
+        |       CharConst
         |       StringConst
         ;
 
@@ -195,12 +196,9 @@ Factor:         Designator
         |       '+' Factor
         ;
 
-Designator:     Ident Qualifiers
-        ;
-
-Qualifiers:     '.' Ident Qualifiers
-        |       '[' Expr ']' Qualifiers
-        |       /* empty */
+Designator:     Ident
+        |       Designator '.' Ident
+        |       Designator '[' Expr ']'
         ;
 
 EqOp:           EQEQ
