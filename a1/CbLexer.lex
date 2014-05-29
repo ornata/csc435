@@ -91,6 +91,12 @@ null     {return (int)Tokens.Kwd_null;}
 "==" {return (int)Tokens.EQEQ;}
 "!=" {return (int)Tokens.NOTEQ;}
 
+"["[ \t\n\r]*"]" {return (int)Tokens.ARRAYDECL;
+                  // have to maintain line count
+                  if (yytext.Length > 0) {
+                      currentLineNumber += yytext.Split('\n').Length - 1;
+                  }}
+
 {opchar} {return (int)(yytext[0]);}
 
 // Literal character

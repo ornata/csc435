@@ -32,6 +32,7 @@
 %token      Kwd_using Kwd_void Kwd_while
 %token      PLUSPLUS MINUSMINUS Ident
 %token      OROR ANDAND EQEQ NOTEQ GTEQ LTEQ
+%token      ARRAYDECL
 
 %start Program
 
@@ -111,12 +112,15 @@ FormalPars:     FormalDecl
 FormalDecl:     Type Ident
         ;
 
-Type:           TypeName '[' ']'
+Type:           TypeName ARRAYDECL
         |       TypeName
         ;
 
 TypeName:       Ident
-        |       Kwd_int
+        |       PrimitiveType
+        ;
+
+PrimitiveType:  Kwd_int
         |       Kwd_string
         |       Kwd_char
         ;
@@ -181,7 +185,13 @@ Term:           Term MulOp Factor
         |       Factor
         ;
 
-Factor:         Designator
+Factor:         '-' FactorNotPlusMinus
+        |       '+' FactorNotPlusMinus
+        |           FactorNotPlusMinus
+        ;
+
+FactorNotPlusMinus:
+                Designator
         |       Designator '(' OptActuals ')'
         |       IntConst
         |       CharConst
@@ -190,10 +200,16 @@ Factor:         Designator
         |       Kwd_new TypeName '[' Expr ']'
         |       Kwd_new TypeName '(' ')'
         |       Kwd_null
-        |       '(' Type ')' Factor
+        |       CastExpression
         |       '(' Expr ')'
-        |       '-' Factor
-        |       '+' Factor
+        ;
+
+// See http://msdn.microsoft.com/en-us/library/aa245183%28v=vs.60%29.aspx
+// Decision to allow or disallow casting by '(' Expr ')' will be done "at a later stage of compiler analysis"
+CastExpression: '(' PrimitiveType ')' Factor
+        |       '(' PrimitiveType ARRAYDECL ')' Factor
+        |       '(' Expr ')' FactorNotPlusMinus
+        |       '(' Ident ARRAYDECL ')' FactorNotPlusMinus
         ;
 
 Designator:     Ident

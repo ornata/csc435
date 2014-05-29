@@ -123,6 +123,23 @@ class Algorithm
         int x;
         x = 0003;
     }
+
+	public static void CastTest()
+	{
+		int x;
+		int[] y;
+		List[] ls;
+		List l;
+
+		// cast to primitive type
+		x = (int) x;
+		// cast to primitive type array
+		y = (int[]) y;
+		// cast to identifier array
+		ls = (List[]) ls;
+		// cast to user defined type
+		l = (List) l;
+	}
 }
 
 class Lists {
