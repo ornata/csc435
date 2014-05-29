@@ -110,8 +110,11 @@ FormalPars:     FormalDecl
 FormalDecl:     Type Ident
         ;
 
-Type:           Type '[' ']'
-        |       Ident
+Type:           TypeName '[' ']'
+        |       TypeName
+        ;
+
+TypeName:       Ident
         |       Kwd_int
         |       Kwd_string
         |       Kwd_char
@@ -183,8 +186,8 @@ Factor:         Designator
         |       CharConst
         |       StringConst
         |       StringConst '.' Ident
-        |       Kwd_new Type '[' Expr ']'
-        |       Kwd_new Type '(' ')'
+        |       Kwd_new TypeName '[' Expr ']'
+        |       Kwd_new TypeName '(' ')'
         |       Kwd_null
         |       '(' Type ')' Factor
         |       '(' Expr ')'

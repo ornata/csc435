@@ -19,9 +19,16 @@ class cbc
                 int tok;
                 for (tok = sc.yylex(); tok != (int) Tokens.EOF; tok = sc.yylex())
                 {
-                    tokens.WriteLine("{0}, text = {1}",
-                                     Enum.GetName(typeof(Tokens), tok),
-                                     sc.yytext);
+                    string enumname = Enum.GetName(typeof(Tokens), tok);
+                    if (enumname == null)
+                    {
+                        tokens.WriteLine("text = {0}", sc.yytext);
+                    }
+                    else
+                    {
+                        tokens.WriteLine("{0}, text = {1}",
+                                         enumname, sc.yytext);
+                    }
                 }
             }
         }
