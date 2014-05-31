@@ -51,15 +51,15 @@ UsingList:      Kwd_using Ident ';' UsingList
         |       /*empty*/
         ;
 
-ClassList:		ClassDecl ClassList
-        |		ClassDecl
+ClassList:      ClassDecl ClassList
+        |       ClassDecl
         ;
 
-ClassDecl:		Kwd_class Ident OptBase '{' MemberDeclList '}'
-	    ;
+ClassDecl:      Kwd_class Ident OptBase '{' MemberDeclList '}'
+        ;
 
-OptBase: 		':' Ident
-        |  		/* empty */ 
+OptBase:        ':' Ident
+        |       /* empty */ 
         ;
 
 MemberDeclList: MemberDecl MemberDeclList
@@ -117,6 +117,10 @@ Type:           TypeName ARRAYDECL
         ;
 
 TypeName:       Ident
+        |       PrimitiveType
+        ;
+
+NonClassType:   PrimitiveType ARRAYDECL
         |       PrimitiveType
         ;
 
@@ -185,9 +189,9 @@ Term:           Term MulOp Factor
         |       Factor
         ;
 
-Factor:         '-' FactorNotPlusMinus
-        |       '+' FactorNotPlusMinus
-        |           FactorNotPlusMinus
+Factor:         '+' Factor
+        |       '-' Factor
+        |       FactorNotPlusMinus
         ;
 
 FactorNotPlusMinus:
@@ -197,19 +201,14 @@ FactorNotPlusMinus:
         |       CharConst
         |       StringConst
         |       StringConst '.' Ident
-        |       Kwd_new TypeName '[' Expr ']'
-        |       Kwd_new TypeName '(' ')'
+        |       Kwd_new Ident '[' Expr ']'
+        |       Kwd_new PrimitiveType '[' Expr ']'
+        |       Kwd_new Ident '(' ')'
         |       Kwd_null
-        |       CastExpression
-        |       '(' Expr ')'
-        ;
-
-// See http://msdn.microsoft.com/en-us/library/aa245183%28v=vs.60%29.aspx
-// Decision to allow or disallow casting by '(' Expr ')' will be done "at a later stage of compiler analysis"
-CastExpression: '(' PrimitiveType ')' Factor
-        |       '(' PrimitiveType ARRAYDECL ')' Factor
         |       '(' Expr ')' FactorNotPlusMinus
+        |       '(' NonClassType ')' Factor
         |       '(' Ident ARRAYDECL ')' FactorNotPlusMinus
+        |       '(' Expr ')'
         ;
 
 Designator:     Ident

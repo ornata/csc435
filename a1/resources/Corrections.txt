@@ -12,10 +12,52 @@ Corrections / Clarifications for Assignment 1
    However, it is fun and a good exercise in using gplex, so our Cb compiler
    will permit such nesting even if it's not supported by C# compilers.
 
+3. The grammar in the CbLangSpec.pdf has more issues:
+
+   *  A constant declaration with a char value should be supported, and it
+      should say 'intConst' instead of 'number'. The corrected rule is:
+
+      ConstDecl	= "public" "const" Type ident "=" ( intConst | stringConst | charConst ) ";"
+
+   *  The grammar does not permit the new operator to create an array whose
+      elements are built-in types. The fifth production tule for Factor should
+      read as:
+
+      Factor = "new" (ident | "int" | "string" | "char")  "[" Expr "]"
+
+4. A big problem with the grammar is that a 'cast' causes shift-reduce conflicts
+   unless the grammar is horribly mangled or we parse and analyze the Cb program
+   twice, or we use a more powerful parsing approach than LALR(1). (Yuk to all 3.)
+
+   Reason: suppose we have this input
+          x = (A)y;
+   There will be a grammar rule to say that a Type can be an Ident, and if A is
+   the name of a class, then the assignment could be legal ... it is definitely
+   syntactically legal. However, we might have this input instead
+          x = (A)+y;
+   and this could be legal if A is the name of a variable. The parser needs to
+   distinguish the two situations when it sees the right parenthesis, but cannot
+   do so unless it looks at tokens coming after that right parenthesis.
+
+   The quick and dirty solution is to write the grammar rules for a cast expression
+   something like this:
+       Factor = '(' Expr ')' Factor
+              | '(' NonClassType ')' Factor
+       NonClassType = SimpleType
+                    | SimpleType '[' ']'
+       SimpleType = 'int' | 'char' | 'string' 
+
+   The first form of the rule for Factor permits nonsense input like
+         x = (1+2)y;
+   in addition to correct uses of a cast operator when the type is the name of a
+   class. Fortunately, we can add a semantic check to the next compiler phases
+   which checks that the cast operator has the correct form.
+
+
 ---
 
 The Cb Language Specification document has been updated to incorporate these
 corrections.
 
-This document will grow if and when needed!
+This document will continue to grow if and when needed!
 
