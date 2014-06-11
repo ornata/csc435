@@ -2,3 +2,4 @@ CbParser.cs
 CbLexer.cs
 *.exe
 submission.zip
+CbParser.conflicts
