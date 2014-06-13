@@ -60,15 +60,15 @@ Program:        UsingList ClassList
         ;
 
 UsingList:      /* empty */
-			    { $$ = AST.Kary(NodeType.UsingList, LineNumber); }
+                { $$ = AST.Kary(NodeType.UsingList, LineNumber); }
         |       UsingList Kwd_using Identifier ';'
-			    { $1.AddChild($3);  $$ = $1; }
+                { $1.AddChild($3);  $$ = $1; }
         ;
 
 ClassList:      ClassDecl
                 { $$ = AST.Kary(NodeType.ClassList, LineNumber, $1); }
         |       ClassList ClassDecl
-			    { $1.AddChild($2);  $$ = $1; }
+                { $1.AddChild($2);  $$ = $1; }
         ;
 
 ClassDecl:      Kwd_class Identifier  '{'  DeclList  '}'
@@ -92,11 +92,11 @@ ConstDecl:      Kwd_public Kwd_const Type Identifier '=' InitVal ';'
         ;
 
 InitVal:        IntConst
-                { $$ = AST.Leaf(NodeType.IntConst, LineNumber, int.Parse(yytext)); }
+                { $$ = AST.Leaf(NodeType.IntConst, LineNumber, int.Parse(lexer.yytext)); }
         |       CharConst
-                { $$ = AST.Leaf(NodeType.CharConst, LineNumber, yytext[0]); }
+                { $$ = AST.Leaf(NodeType.CharConst, LineNumber, lexer.yytext[0]); }
         |       StringConst
-                { $$ = AST.Leaf(NodeType.StringConst, LineNumber, yytext); }
+                { $$ = AST.Leaf(NodeType.StringConst, LineNumber, lexer.yytext); }
         ;
 
 FieldDecl:      Kwd_public Type IdentList ';'
@@ -197,7 +197,7 @@ OptActuals:     /* empty */
 ActPars:        ActPars ',' Expr
                 { $1.AddChild($3); $$ = $1; }
         |       Expr
-                { $$ = AST.Kary(NodeType.ActuaLList, $1.LineNumber, $1); }
+                { $$ = AST.Kary(NodeType.ActualList, $1.LineNumber, $1); }
         ;
 
 Block:          '{' DeclsAndStmts '}'
@@ -266,11 +266,11 @@ UnaryExprNotUMinus:
         |       Kwd_null
                 { $$ = AST.Leaf(NodeType.Null, LineNumber); }
         |       IntConst
-                { $$ = AST.Leaf(NodeType.IntConst, LineNumber, int.Parse(yytext)); }
+                { $$ = AST.Leaf(NodeType.IntConst, LineNumber, int.Parse(lexer.yytext)); }
         |       CharConst
-                { $$ = AST.Leaf(NodeType.CharConst, LineNumber, yytext[0]); }
+                { $$ = AST.Leaf(NodeType.CharConst, LineNumber, lexer.yytext[0]); }
         |       StringConst
-                { $$ = AST.Leaf(NodeType.StringConst, LineNumber, yytext); }
+                { $$ = AST.Leaf(NodeType.StringConst, LineNumber, lexer.yytext); }
         |       StringConst '.' Identifier // Identifier must be "Length"
                 { $$ = AST.NonLeaf(NodeType.Dot, $3.LineNumber, $1, $3); }
         |       Kwd_new Identifier '(' ')'
@@ -287,13 +287,14 @@ UnaryExprNotUMinus:
                 { $$ = AST.NonLeaf(NodeType.Cast, $2.LineNumber, AST.NonLeaf(NodeType.Array, $2.LineNumber, $2), $4); }
         ;
 
-Designator:     Identifier Qualifiers
-        ;
-
-Qualifiers:     '.' Identifier Qualifiers
-        |       '[' Expr ']' Qualifiers
-        |       '[' ']' Qualifiers   // needed for cast syntax
-        |       /* empty */
+Designator:     Identifier
+                { $$ = $1; }
+        |       Designator '.' Identifier
+                { $$ = AST.NonLeaf(NodeType.Dot, $1.LineNumber, $1, $3); }
+        |       Designator '[' Expr ']'
+                { $$ = AST.NonLeaf(NodeType.Index, $1.LineNumber, $1, $3); }
+        |       Designator '[' ']' 
+                { $$ = AST.NonLeaf(NodeType.Array, $1.LineNumber, $1); }
         ;
 
 Identifier:     Ident
