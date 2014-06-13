@@ -21,7 +21,7 @@ CbLexer.cs: CbLexer.lex
 CbParser.cs: CbParser.y
 	$(MONO) $(GPPG) /gplex /conflicts CbParser.y > CbParser.cs
 
-cbc: cbc.cs ShiftReduceParser.cs CbLexer.cs CbParser.cs CbAST.cs CbType.cs CbTopLevel.cs CbVisitor.cs CbPrVisitor.cs CbTopLevelVisitor.cs
+cbc.exe: cbc.cs ShiftReduceParser.cs CbLexer.cs CbParser.cs CbAST.cs CbType.cs CbTopLevel.cs CbVisitor.cs CbPrVisitor.cs CbTopLevelVisitor.cs
 	$(CSC) $^
 
 submission.zip: cbc.cs CbLexer.lex CbParser.y CbAST.cs CbVisitor.cs CbPrVisitor.cs CbType.cs CbTopLevel.cs CbTopLevelVisitor.cs ShiftReduceParser.cs README.txt
