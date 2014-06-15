@@ -31,6 +31,7 @@ class Lists {
         s = Console.ReadLine();
         ccc = null;
         int i;
+		i = 9; // for testing
         i = 0;
         while(i < s.Length) {
             char ch;

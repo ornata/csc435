@@ -20,8 +20,11 @@ opChar      [\-+<>*/%:=;,.\[\]{}()]
     IDictionary<string,Tokens> keywords;
     int commentNesting = 0;
     StreamWriter tokensListing = null;
+    String lastTokenText = null;
 
     public int LineNumber { get{ return yyline; } }
+    public String LastTokenText { get{ return lastTokenText; } }
+
     Tokens t;
     
     public void TrackTokens( string tfile ) {
@@ -71,6 +74,15 @@ opChar      [\-+<>*/%:=;,.\[\]{}()]
 
     // Output tracing information to a file for each token
     private void track( Tokens t ) {
+        // update LastTokenText
+        if (t == Tokens.StringConst) {
+            lastTokenText = yytext.Substring(1, yytext.Length - 2);
+        } else if (t == Tokens.CharConst) {
+            lastTokenText = yytext.Substring(1, 1);
+        } else if (t == Tokens.IntConst) {
+            lastTokenText = yytext;
+        }
+
         if (tokensListing == null) return;
         if ((int)t <= 127)
             tokensListing.Write("Token \"{0}\"", (char)t);
