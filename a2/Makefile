@@ -24,5 +24,5 @@ CbParser.cs: CbParser.y
 cbc.exe: cbc.cs ShiftReduceParser.cs CbLexer.cs CbParser.cs CbAST.cs CbType.cs CbTopLevel.cs CbVisitor.cs CbPrVisitor.cs CbTopLevelVisitor.cs
 	$(CSC) -debug $^
 
-submission.zip: cbc.cs CbLexer.lex CbParser.y CbAST.cs CbVisitor.cs CbPrVisitor.cs CbType.cs CbTopLevel.cs CbTopLevelVisitor.cs ShiftReduceParser.cs README.txt
+submission.zip: cbc.cs CbLexer.lex CbParser.y CbAST.cs CbVisitor.cs CbPrVisitor.cs CbType.cs CbTopLevel.cs CbTopLevelVisitor.cs ShiftReduceParser.cs README.txt Makefile
 	zip submission $^
