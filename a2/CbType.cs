@@ -142,14 +142,6 @@ public class CbClass: CbType {
             cc.Print(p);
         }
 
-        // output the fields
-        foreach( CbMember cm in Members.Values ) {
-            CbField cf = cm as CbField;
-            if (cf == null) continue;
-            p.Write("    ");
-            cf.Print(p);
-        }
-
         // output the methods
         foreach( CbMember cm in Members.Values ) {
             CbMethod ct = cm as CbMethod;
