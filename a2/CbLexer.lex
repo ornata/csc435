@@ -22,9 +22,8 @@ opChar      [\-+<>*/%:=;,.\[\]{}()]
     StreamWriter tokensListing = null;
 
     public int LineNumber { get{ return yyline; } }
-
     Tokens t;
-
+    
     public void TrackTokens( string tfile ) {
         try {
             tokensListing = new StreamWriter(tfile);
@@ -104,6 +103,8 @@ opChar      [\-+<>*/%:=;,.\[\]{}()]
 "!="            { t = Tokens.NOTEQ; track(t);  return (int)t; }
 ">="            { t = Tokens.GTEQ; track(t);  return (int)t; }
 "<="            { t = Tokens.LTEQ; track(t);  return (int)t; }
+
+'['{WS}*']'     { t = Tokens.ARRAYDECL; track(t); return (int)t; }
 
 {opChar}        { t = (Tokens)yytext[0]; track(t);  return (int)t; }
 

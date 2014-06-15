@@ -44,7 +44,7 @@
 %token      Kwd_static Kwd_string Kwd_using Kwd_virtual Kwd_void Kwd_while
 
 // Other tokens
-%token      PLUSPLUS MINUSMINUS Ident CharConst IntConst StringConst
+%token      PLUSPLUS MINUSMINUS ARRAYDECL Ident CharConst IntConst StringConst
 
 
 %%
@@ -92,7 +92,7 @@ ConstDecl:      Kwd_public Kwd_const Type Identifier '=' InitVal ';'
         ;
 
 InitVal:        IntConst
-                { $$ = AST.Leaf(NodeType.IntConst, LineNumber, int.Parse(lexer.yytext)); }
+                { $$ = AST.Leaf(NodeType.IntConst, LineNumber, int.Parse(lexer.yytext)); } 
         |       CharConst
                 { $$ = AST.Leaf(NodeType.CharConst, LineNumber, lexer.yytext[0]); }
         |       StringConst
@@ -145,7 +145,7 @@ FormalDecl:     Type Identifier
 
 Type:           TypeName
                 { $$ = $1; }
-        |       TypeName '[' ']'
+        |       TypeName ARRAYDECL 
                 { $$ = AST.NonLeaf(NodeType.Array, $1.LineNumber, $1); }
         ;
 
@@ -206,10 +206,10 @@ Block:          '{' DeclsAndStmts '}'
 
 LocalDecl:      TypeName IdentList ';'
                 { $$ = AST.NonLeaf(NodeType.LocalDecl, $1.LineNumber, $1, $2); }
-        |       Identifier '[' ']' IdentList ';'
-                { $$ = AST.NonLeaf(NodeType.LocalDecl, $1.LineNumber, AST.NonLeaf(NodeType.Array, $1.LineNumber, $1), $4); }
-        |       BuiltInType '[' ']' IdentList ';'
-                { $$ = AST.NonLeaf(NodeType.LocalDecl, $1.LineNumber, AST.NonLeaf(NodeType.Array, $1.LineNumber, $1), $4); }
+        |       Identifier ARRAYDECL IdentList ';'
+                { $$ = AST.NonLeaf(NodeType.LocalDecl, $1.LineNumber, AST.NonLeaf(NodeType.Array, $1.LineNumber, $1), $3); }
+        |       BuiltInType ARRAYDECL IdentList ';'
+                { $$ = AST.NonLeaf(NodeType.LocalDecl, $1.LineNumber, AST.NonLeaf(NodeType.Array, $1.LineNumber, $1), $3); }
         ;
 
 DeclsAndStmts:   /* empty */
@@ -270,7 +270,7 @@ UnaryExprNotUMinus:
         |       CharConst
                 { $$ = AST.Leaf(NodeType.CharConst, LineNumber, lexer.yytext[0]); }
         |       StringConst
-                { $$ = AST.Leaf(NodeType.StringConst, LineNumber, lexer.yytext); }
+                { $$ = AST.Leaf(NodeType.StringConst, LineNumber, lexer.yytext); } 
         |       StringConst '.' Identifier // Identifier must be "Length"
                 { $$ = AST.NonLeaf(NodeType.Dot, $3.LineNumber, $1, $3); }
         |       Kwd_new Identifier '(' ')'
@@ -281,10 +281,12 @@ UnaryExprNotUMinus:
                 { $$ = $2; }
         |       '(' Expr ')' UnaryExprNotUMinus                 // cast
                 { $$ = AST.NonLeaf(NodeType.Cast, $2.LineNumber, $2, $4); }
-        |       '(' BuiltInType ')' UnaryExprNotUMinus          // cast
+        |       '(' BuiltInType ')' UnaryExpr          // cast
                 { $$ = AST.NonLeaf(NodeType.Cast, $2.LineNumber, $2, $4); }
-        |       '(' BuiltInType '[' ']' ')' UnaryExprNotUMinus  // cast
-                { $$ = AST.NonLeaf(NodeType.Cast, $2.LineNumber, AST.NonLeaf(NodeType.Array, $2.LineNumber, $2), $4); }
+        |       '(' BuiltInType ARRAYDECL ')' UnaryExpr  // cast
+                { $$ = AST.NonLeaf(NodeType.Cast, $2.LineNumber, AST.NonLeaf(NodeType.Array, $2.LineNumber, $2), $5); }
+        |       '(' Identifier ARRAYDECL ')' UnaryExprNotUMinus // cast
+                { $$ = AST.NonLeaf(NodeType.Cast, $2.LineNumber, AST.NonLeaf(NodeType.Array, $2.LineNumber, $2, $5)); }
         ;
 
 Designator:     Identifier
@@ -293,14 +295,13 @@ Designator:     Identifier
                 { $$ = AST.NonLeaf(NodeType.Dot, $1.LineNumber, $1, $3); }
         |       Designator '[' Expr ']'
                 { $$ = AST.NonLeaf(NodeType.Index, $1.LineNumber, $1, $3); }
-        |       Designator '[' ']' 
-                { $$ = AST.NonLeaf(NodeType.Array, $1.LineNumber, $1); }
         ;
 
 Identifier:     Ident
                 { $$ = AST.Leaf(NodeType.Ident, LineNumber, lexer.yytext); }
         ;
 %%
+
 
 // returns the AST constructed for the Cb program
 public AST Tree { get; private set; }
