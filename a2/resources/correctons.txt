@@ -1,0 +1,41 @@
+Corrections  and Clarifications
+
+1. When building the top-level symbol table, information entered for members
+   of classes does not include any datatype information at this time. (Such
+   information cannot be completely entered because we don't know what all
+   the classes are in the program.)
+   A null pointer can be used instead of any type descriptor reference when
+   creating a descriptor for a class member. Similarly null can be used
+   instead of a list for a method's argument types.
+   Adding in all the missing information and the type checking will be a
+   big component of Assignment 3. For know, we need to know only the names
+   of class members, what kind of member they are, and for a method whether
+   it is static or not static (both virtual and override mean not static).
+
+2. The source code for CbType.cs contained an error which prevented it from
+   compiling. Sorry. The correction is to add a new version of the Print
+   method to the CbClass class which takes one argument, as follows:
+      public override void Print(TextWriter p) {
+          Print(p, "");
+      }
+   and to remove the override attribute from the 2 argument version of
+   the Print method, as follows:
+      public void Print(TextWriter p, string prefix) {
+
+3. The source code for CbAST.cs omitted declarations of tags to be used for
+   the builtin types int, char and string. The new enumeration constants
+   are named IntType, CharType and StringType respectively.
+   They should be generated for leaf nodes which represent a BuiltInType
+   node in the AST.
+
+4. The grammar omitted a production rule for unary minus,=.
+
+5. The lex specification for IDCHAR was wrong. It was originally defined as
+   [a-zA-z0-9_] whereas it should have been [a-zA-Z0-9_].
+
+***
+
+This list is likely to grow as questions are asked and issues are found
+with the assignment specification.
+
+Re-downloading the source code will obtain corrected versions of the files.

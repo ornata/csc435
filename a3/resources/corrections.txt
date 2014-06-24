@@ -1,0 +1,39 @@
+Corrections and Clarifications
+
+1. Return statements
+   Checking whether a return statement returns a value with an appropriate
+   type is part of type-checking. Also, the type checker must make sure that
+   a return statement without a value to return does not appear in a method
+   which returns a value, and a return statement with a value to return does
+   not appear in a void method.
+   A good compiler also checks that it is impossible to reach the end of a
+   method which returns a value ... it generates an error message along the
+   lines of "not all paths return a value". This kind of check logically
+   requires another traversal over the AST with a different visitor.
+   To keep the programming task reasonable for Assignment 3, this check will
+   not be required.
+
+2. Unreachable Code
+   Any statements which follow a return statement in Cb are unreachable. A good
+   compiler would issue a warning message when that occurs. However, the full
+   check for unreachability is not totally trivial. If both parts of an if-then-
+   else statement end with return statements, then any statement following the
+   if statement is unreachable.
+   Again, to keep the programming task reasonable for Assignment 3, this check
+   will not be required. However, if you do choose to implement the check for all
+   paths returning a value, it is a simple matter to include a full check for
+   statement reachability in that same checking code.
+
+3. Unused Local Variables
+   A good compiler issues a warning message for any local variable which is
+   declared but never used. This is an easy check to perform (it just requires
+   a bool flag to be associated with each symbol table entry). But again,
+   such checking is not required for Assignment 3.
+
+4. Local Variables Used Before Being Assigned
+   A good compiler issues an error message or a warning message if a variable
+   can be used before it has been assigned a value. Checking for this condition
+   is not trivial and is not inclded in Assignment 3. However ... such checking
+   is inherent in the SSA code which will be created for Assignment 4. We will
+   get this check for free.
+
