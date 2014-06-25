@@ -33,6 +33,8 @@ class Digit: List {
         Console.Write(d);
         if (next != null) next.Print();
     }
+
+	public int[] a;
 }
 
 class Lists {

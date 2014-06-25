@@ -47,12 +47,12 @@ public class TypeCheckVisitor : Visitor {
             CbClass clazz = (CbClass) data;
 
             // get the type of the field
-            CbType fieldtype;
+            CbType fieldType;
             if (node[0] == null) {
-                fieldtype = CbType.Void;
+                fieldType = CbType.Void;
             } else {
                 node[0].Accept(this, clazz);
-                fieldtype = node[0].Type;
+                fieldType = node[0].Type;
             }
 
             // apply the type to all ids declared with it
@@ -60,7 +60,7 @@ public class TypeCheckVisitor : Visitor {
             for (int i = 0; i < idList.NumChildren; i++) {
                 string name = (idList[i] as AST_leaf).Sval;
                 CbField field = clazz.Members[name] as CbField;
-                field.Type = fieldtype;
+                field.Type = fieldType;
             }
         }
         else if (node.Tag == NodeType.Method) {
@@ -87,9 +87,15 @@ public class TypeCheckVisitor : Visitor {
                 formalTypes.Add(node[2][i].Type);
             }
             method.ArgType = formalTypes;
-
-            // Visit method body
-            node[3].Accept(this, clazz);
+        }
+        else if (node.Tag == NodeType.Array) {
+            CbType elemType;
+            if (node[0] == null) {
+                elemType = CbType.Void;
+            } else {
+                node[0].Accept(this, data);
+                node.Type = CbType.Array(node[0].Type);
+            }
         }
         else
         {
