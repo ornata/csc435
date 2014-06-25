@@ -3,6 +3,18 @@ using System;
 class List {
     public List next;
     public virtual void Print() {}
+
+    public virtual int Length() {
+        if (next == null) {
+            return 0;
+        } else {
+            return 1 + next.Length();
+        }
+    }
+
+	public virtual List GetSelf() {
+		return this;
+	}
 }
 
 class Other: List {
@@ -31,18 +43,18 @@ class Lists {
         s = Console.ReadLine();
         ccc = null;
         int i;
-		i = 9; // for testing
+        i = 9; // for testing
         i = 0;
         while(i < s.Length) {
             char ch;
             ch = s[i];  i++;
             List elem;
             if (ch >= '0' && ch <= '9') {
-		        Digit elemD;
+                Digit elemD;
                 elemD = new Digit();  elemD.d = ch - '0';
                 elem = elemD;
             } else {
-		        Other elemO;
+                Other elemO;
                 elemO = new Other();  elemO.c = ch;
                 elem = elemO;
             }
