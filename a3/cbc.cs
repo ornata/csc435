@@ -136,6 +136,12 @@ public class Start {
         // perform full typechecking plus additional semantic checking ...
         
         ... instantiate type-checking visitor(s) and invoke it/them here
+*/
+
+        TypeCheckVisitor typeChecker = new TypeCheckVisitor(NameSpace.TopLevelNames);
+        tree.Accept(typeChecker, NameSpace.TopLevelNames);
+
+/*
 
         // allow inspection of all the type annotations
         if (printASTtc) {
