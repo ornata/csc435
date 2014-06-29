@@ -3,10 +3,10 @@ namespace FrontEnd {
 using System;
 using System.Collections.Generic;
 
-public class TypeCheckVisitor : Visitor {
+public class TypeVisitor : Visitor {
     private NameSpace CurrentNameSpace;
 
-    public TypeCheckVisitor(NameSpace currentNameSpace) {
+    public TypeVisitor(NameSpace currentNameSpace) {
         CurrentNameSpace = currentNameSpace;
     }
 
