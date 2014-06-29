@@ -28,20 +28,20 @@ public class TLVisitor: Visitor {
     public TLVisitor( ) {
     }
 
-    public override void Visit(AST_kary node, object data) {
-        Dictionary<string, AST> savedList;
+	public override void Visit(AST_kary node, object data) {
+	    Dictionary<string, AST> savedList;
         switch(node.Tag) {
         case NodeType.UsingList:
-            Debug.Assert(data != null && data is NameSpace);
+	        Debug.Assert(data != null && data is NameSpace);
             // add members of each namespace in list to top-level namespace
             for(int i=0; i<node.NumChildren; i++) {
                 openNameSpace(node[i], (NameSpace)data);
             }
             break;
         case NodeType.ClassList:
-            Debug.Assert(data != null && data is NameSpace);
-            savedList = pendingClassDefns;
-            pendingClassDefns = new Dictionary<string, AST>();
+	        Debug.Assert(data != null && data is NameSpace);
+	        savedList = pendingClassDefns;
+	        pendingClassDefns = new Dictionary<string, AST>();
             // add each class to the current namespace, by continuing traversal
             for(int i=0; i<node.NumChildren; i++) {
                 node[i].Accept(this, data);
@@ -55,7 +55,7 @@ public class TLVisitor: Visitor {
             pendingClassDefns = savedList;
             break;
         case NodeType.MemberList:
-            Debug.Assert(data != null && data is CbClass);
+	        Debug.Assert(data != null && data is CbClass);
             // add each member to the current class, by continuing traversal
             for(int i=0; i<node.NumChildren; i++) {
                 node[i].Accept(this, data);
@@ -66,7 +66,7 @@ public class TLVisitor: Visitor {
         }
     }
 
-    public override void Visit( AST_nonleaf node, object data ) {
+	public override void Visit( AST_nonleaf node, object data ) {
         switch(node.Tag) {
         case NodeType.Program:
             Debug.Assert(data != null && data is NameSpace);
@@ -119,16 +119,16 @@ public class TLVisitor: Visitor {
             node.Type = classTypeDefn;
             break;
         case NodeType.Const:
-            Debug.Assert(data != null && data is CbClass);
-            CbClass c1 = (CbClass)data;
+	        Debug.Assert(data != null && data is CbClass);
+	        CbClass c1 = (CbClass)data;
             // add const name to current class
             AST_leaf cid = (AST_leaf)(node[1]);
             CbConst cdef = new CbConst(cid.Sval,null);
             c1.AddMember(cdef);
             break;
         case NodeType.Field:
-            Debug.Assert(data != null && data is CbClass);
-            CbClass c2 = (CbClass)data;
+	        Debug.Assert(data != null && data is CbClass);
+	        CbClass c2 = (CbClass)data;
             // add a bunch of field names to current class
             AST_kary fields = (AST_kary)(node[1]);
             for(int i=0; i<fields.NumChildren; i++) {
@@ -138,8 +138,8 @@ public class TLVisitor: Visitor {
             }
             break;
         case NodeType.Method:
-            Debug.Assert(data != null && data is CbClass);
-            CbClass c3 = (CbClass)data;
+	        Debug.Assert(data != null && data is CbClass);
+	        CbClass c3 = (CbClass)data;
             // add method name to current class
             AST_leaf mid = (AST_leaf)(node[1]);
             AST attr = node[4];
@@ -151,8 +151,8 @@ public class TLVisitor: Visitor {
         }
     }
 
-    public override void Visit(AST_leaf node, object data) {
-        throw new Exception("TLVisitor traversal should not have reached a leaf node");
+	public override void Visit(AST_leaf node, object data) {
+	    throw new Exception("TLVisitor traversal should not have reached a leaf node");
     }
 
     private void openNameSpace( AST ns2open, NameSpace currentNS ) {
