@@ -5,17 +5,25 @@
     Author: Nigel Horspool
     
     Dates: 2012-2014
+    
+    [26 June] Additions/Changes:
+    *   enum value: CbBasicType.Null
+    *   static member: CbType.Null
+    *   class: CbMethodType
+    *   and some recoding of CbMethod to provide a Type property
+        
 */
 
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Text;
 
 namespace FrontEnd {
 
 
 public enum CbBasicType {
-    Void, Int, Bool, Char, Error
+    Void, Int, Bool, Char, Null, Error
 }
 
 public abstract class CbType {
@@ -25,6 +33,7 @@ public abstract class CbType {
     static CbBasic ct = new CbBasic(CbBasicType.Char);
     static CbClass ot = new CbClass("Object",null);
     static CbClass st = new CbClass("String",null);
+    static CbBasic nt = new CbBasic(CbBasicType.Null);
     static CbBasic et = new CbBasic(CbBasicType.Error);
     static IDictionary<CbType,CFArray> arrayTypes = new Dictionary<CbType,CFArray>();
 
@@ -33,6 +42,7 @@ public abstract class CbType {
     public static CbBasic Int{ get{ return it; } }
     public static CbBasic Bool{ get{ return bt; } }
     public static CbBasic Char{ get{ return ct; } }
+    public static CbBasic Null{ get{ return nt; } }
     public static CbClass String{ get{ return st; } }
     public static CbClass Object{ get{ return ot; } }
     public static CbBasic Error{ get{ return et; } }
@@ -152,7 +162,40 @@ public class CbClass: CbType {
 
         p.WriteLine("}\n");
     }
+}
 
+// A wrapper for a CbMethod value
+public class CbMethodType : CbType {
+    public CbMethod Method{ get; protected set; } 
+    
+    public CbMethodType( CbMethod method ) {
+        Method = method;
+    }
+    
+    public override string ToString() {
+        return Method.ToString();
+    }
+
+    public override void Print(TextWriter p) {
+        p.Write(this.ToString());
+    }
+}
+
+// A wrapper for a NameSpace
+public class CbNameSpaceContext : CbType {
+    public NameSpace Space{ get; protected set; } 
+    
+    public CbNameSpaceContext( NameSpace space ) {
+        Space = space;
+    }
+    
+    public override string ToString() {
+        return "namespace " + Space.Name;
+    }
+
+    public override void Print(TextWriter p) {
+        p.Write(this.ToString());
+    }
 }
 
 public class CbBasic: CbType {
@@ -177,13 +220,12 @@ public abstract class CbMember {
     public String Name{ get; set; }
     public CbClass Owner { get; set; }  // class owning this field
     public bool IsStatic{ get; set; }   // static
+    public virtual CbType Type{ get; set; }  // type of the const, field or method
 
     public abstract void Print(TextWriter p);
 }
 
 public class CbConst: CbMember {
-    public CbType Type{ get; set; }
-
     public CbConst( string nm, CbType t ) {
         Name = nm;  Type = t; IsStatic = true;
     }
@@ -194,8 +236,6 @@ public class CbConst: CbMember {
 }
 
 public class CbField: CbMember {
-    public CbType Type{ get; set; }
-
     public CbField( string nm, CbType t ) {
         Name = nm;  Type = t;
         IsStatic = false; // Cb does not have static fields
@@ -209,7 +249,10 @@ public class CbField: CbMember {
 public class CbMethod: CbMember {
     public CbType ResultType{ get; set; }
     public IList<CbType> ArgType { get; set; }
-    
+    public override CbType Type{
+        get { return new CbMethodType(this); }
+        set { throw new Exception("internal error"); } }
+
     public CbMethod( string nm, bool isStatic, CbType rt, IList<CbType> argType ) {
        Name = nm;  IsStatic = isStatic;
        ResultType = rt; ArgType = argType;
