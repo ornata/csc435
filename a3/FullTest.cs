@@ -14,6 +14,12 @@ class Foo {
         f = new Bar();
         int r;
         r = f.Umm(3,4);
+
+        int L;
+        L = "hello".Length;
+
+        hiThere.Wength = 3;
+        hiThere.Length = 3;
     }
 
     public virtual int Ummm( int a, int b ) {

@@ -97,6 +97,13 @@ public class TypeVisitor : Visitor {
                 node.Type = CbType.Array(node[0].Type);
             }
         }
+        else if (node.Tag == NodeType.Formal) {
+            // visit the type of the formal
+            node[0].Accept(this, data);
+
+            // steal its type
+            node.Type = node[0].Type;
+        }
         else
         {
             for (int i = 0; i < node.NumChildren; i++) {
