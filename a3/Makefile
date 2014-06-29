@@ -38,5 +38,14 @@ cbc.exe:  $(SOURCES)
 submission.zip: $(SOURCES_NOGEN) CbLexer.lex CbParser.y README.txt
 	zip submission $^
 
-test: cbc.exe CbExample.cs
+ExampleTest: cbc.exe CbExample.cs
 	$(MONO) --debug cbc.exe -ns CbExample.cs
+
+ExampleTestSolution: cbc.exe CbExample.cs
+	$(MONO) --debug cbc-sample-solution.exe -ns CbExample.cs
+
+FullTest: cbc.exe FullTest.cs
+	$(MONO) --debug cbc.exe -ns FullTest.cs
+
+FullTestSolution: cbc.exe FullTest.cs
+	$(MONO) --debug cbc-sample-solution.exe -ns FullTest.cs
