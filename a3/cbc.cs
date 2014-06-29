@@ -146,7 +146,7 @@ public class Start {
         TypeVisitor typeVisitor = new TypeVisitor(NameSpace.TopLevelNames);
         tree.Accept(typeVisitor, NameSpace.TopLevelNames);
 
-        TypeCheckVisitor typeCheckVisitor = new TypeCheckVisitor(NameSpace.TopLevelNames);
+        TypeCheckVisitor typeCheckVisitor = new TypeCheckVisitor();
         tree.Accept(typeCheckVisitor, NameSpace.TopLevelNames);
 
 
