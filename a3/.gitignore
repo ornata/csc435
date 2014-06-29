@@ -1,6 +1,6 @@
 CbParser.cs
 CbLexer.cs
-*.exe
+cbc.exe
 submission.zip
 CbParser.conflicts
 *.swp
