@@ -45,18 +45,23 @@ public class Start {
 
     static AST DoParse( string filename, bool printTokens ) {
         AST result = null;
-        FileStream src = File.OpenRead(filename);
-        Scanner sc = new Scanner(src);
-        sc.Initialize();
-        if (printTokens)
-            sc.TrackTokens("tokens.txt");
-
-        Parser parser = new Parser(sc);
-    
-        if (parser.Parse())
-            result = parser.Tree;
-
-        sc.CleanUp();
+        try {
+            using (FileStream src = File.OpenRead(filename)) {
+                Scanner sc = new Scanner(src);
+                sc.Initialize();
+                if (printTokens)
+                    sc.TrackTokens("tokens.txt");
+        
+                Parser parser = new Parser(sc);
+            
+                if (parser.Parse())
+                    result = parser.Tree;
+        
+                sc.CleanUp();
+            }
+        } catch( Exception e ) {
+            Console.WriteLine(e.Message);
+        }
         return result;
     }
     
@@ -146,7 +151,6 @@ public class Start {
 
 
 /*
-
         // allow inspection of all the type annotations
         if (printASTtc) {
         	PrVisitor printVisitor = new PrVisitor();
