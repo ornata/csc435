@@ -150,13 +150,11 @@ public class Start {
         tree.Accept(typeCheckVisitor, NameSpace.TopLevelNames);
 
 
-/*
         // allow inspection of all the type annotations
         if (printASTtc) {
         	PrVisitor printVisitor = new PrVisitor();
-            tree.Accept(printVisitor);    // print AST with the datatype annotations
+            tree.Accept(printVisitor, 0);    // print AST with the datatype annotations
         }
-*/
 
         if (printNS)
             NameSpace.Print();
