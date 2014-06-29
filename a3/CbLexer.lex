@@ -25,6 +25,11 @@ opChar      [\-+<>*/%:=;,.\[\]{}()]
 
     Tokens t;
 
+    public override void yyerror( string errmsg, params object[] args ) {
+        System.Console.Write("{0}: ", yyline);
+        System.Console.WriteLine(errmsg, args);
+    }
+
     public void TrackTokens( string tfile ) {
         try {
             tokensListing = new StreamWriter(tfile);
