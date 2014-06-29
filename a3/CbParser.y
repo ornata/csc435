@@ -91,9 +91,9 @@ ConstDecl:      Kwd_public Kwd_const Type Identifier '=' InitVal ';'
                 { $$ = AST.NonLeaf(NodeType.Const, $4.LineNumber, $3, $4, $6); }
         ;
 
-InitVal:        IntConst       { $$ = $1; }
-        |       CharConst      { $$ = $1; }
-        |       StringConst    { $$ = $1; }
+InitVal:        AnInteger   { $$ = $1; }
+        |       AChar       { $$ = $1; }
+        |       AString     { $$ = $1; }
         ;
 
 FieldDecl:      Kwd_public Type IdentList ';'
