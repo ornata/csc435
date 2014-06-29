@@ -20,9 +20,9 @@ Corrections and Clarifications
    else statement end with return statements, then any statement following the
    if statement is unreachable.
    Again, to keep the programming task reasonable for Assignment 3, this check
-   will not be required. However, if you do choose to implement the check for all
-   paths returning a value, it is a simple matter to include a full check for
-   statement reachability in that same checking code.
+   will not be required. However, if you do choose to implement the check for
+   all paths returning a value, it is a simple matter to include a full check 
+   for statement reachability in that same checking code.
 
 3. Unused Local Variables
    A good compiler issues a warning message for any local variable which is
@@ -37,3 +37,90 @@ Corrections and Clarifications
    is inherent in the SSA code which will be created for Assignment 4. We will
    get this check for free.
 
+5. Missing yyerror method in CbLexer.lex
+   The initially supplied code for the lexer did not provide an override of
+   the yyerror method used to report syntax errors. Without this, any syntax
+   error simply causes the parser to exit unsuccessfully without any message
+   to say what the syntax problem was.
+   The supplied code has been corrected (as of 10:25, 23-06-2014).
+
+7. Clarifications and changes of mind on some language semantics
+   * The assignment says that the assignment
+         A[] arr = new B[99];
+     should be allowed when B is a subclass of A (this is array covariance).
+     On second thoughts, that requires extra run-time code to make it work
+     properly. To keep life simple, I am ruling that you do *not* have to
+     support this. A restriction enforced at compile time that the LHS and
+     the RHS must have identical element types in an array assignment is OK.
+   * Semantic checking has to accept a .Length property on array values (just
+     as it should for string values). It has an int datatype, and it cannot
+     be the target of an assignment.
+   * Assignment 3 did not provide an exhaustive list of all the things which
+     must be checked. You need to do some thinking as you go through the
+     Cb language constructs and imagine what miuses are possible. One of the
+     checks that was not listed was checking to see whether the break and
+     continue statements are used only inside loops.
+   * When a cast construction is used, there should be more checking that the
+     cast is meaningful than is described in the Assignment 3 document.
+     In particular, an expression like this when A is a class type
+           (A)b
+     is meaningful only if b's type is also a class type, B, and if A,B have
+     an ancestor relationship -- either A is an ancestor of B (in which case
+     the cast is redundant) or B is an ancestor of A.  [And of course, we
+     can have A==B, which makes the cast redundanct, or the value b can be
+     null, and the cast is again redundant.]
+   * Finally, to be clear, Cb does not permit method overloading:
+       -- we don't allow two methods in the same class to have the same name,
+     butd we do allow method overriding:
+       -- a method in class B can have the same name and same signature as
+          a method in class A where A is an ancestor of B (we also require
+          that the method be flagged as virtual or override, as appropriate).
+     Combining these two aspects of Cb means that we do not allow a method in
+     B to have the same name as a method in an ancestor class A unless it is
+     an override.
+     NOTE: for the signatures of two methods to match, the C# rule is that
+     argument types and return types must match identically. (This is not
+     quite the same as in Java where the return type is not compared.)
+
+8. The classes provided in the CbType.cs file have some deficiencies which
+   cause difficulties when type checking method bodies.
+   To simplify that type checking task, two new features need to be added.
+   * A new basic type named Null needs to be provided. It is the type of the
+     keyword null. This basic type has the special properties that it can be
+     assigned to any variable with a class type, and can be compared for
+     equality/inequality against any class type value.
+   * When annotating the AST with datatypes, the node with the DOT tag in a
+     subtree formed for a construction like this
+          C.method1
+     (where method1 is a method defined in class C) needs to be annotated with
+     a Type attribute which represents the signature of method1.
+     It would be nice to be able to assign the CbMethod value that describes
+     method1 to the Type attribute, but CbMethod is not a subclass of CbType
+     (the type of the Type attribute) and nor should it be.
+     The simple solution is to create a new subclass of CbType which is a
+     wrapper class whose only member is a field of type CbMethod. That new
+     class is named CbMethodType in the revised code. (Then some further
+     simplifications/rationalizations imply additional coding changes to be
+     made in CbType.cs.)
+   A new version of CbType.cs with these additions has been made available in
+   the assignment materials.
+
+9. There was an error in CbParser.y which caused the initialization part of a
+   const declaration to be missing in the AST.  The correction is to replace
+   the rules for InitVal with these:
+	InitVal:        AnInteger   { $$ = $1; }
+        	|       AChar       { $$ = $1; }
+       		|       AString     { $$ = $1; }
+        	;
+   A corrected version of CbParser.y has been made available.
+
+10. One more wrapper class is needed to simplify the task of annotating a
+    subtree that has DOT at its root. In a construction like
+		System.Console
+    a visit to the the lefthand child of the DOT node should cause the Type
+    attribute of that lefthand node to be set to a value which represents the
+    System namespace.
+    A new wrapper class named CbNameSpaceContext has been added to CbType.cs.
+    When visiting an Ident node which contains the name of a namespace, its
+    type attribute can be set to a new instance of this wrapper class.
+    The updated CbType.cs file is available.
