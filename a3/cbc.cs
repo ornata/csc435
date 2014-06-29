@@ -146,8 +146,8 @@ public class Start {
         TypeVisitor typeVisitor = new TypeVisitor(NameSpace.TopLevelNames);
         tree.Accept(typeVisitor, NameSpace.TopLevelNames);
 
-        TypeCheckVisitor typeCheckVisitor = new TypeCheckVisitor();
-        tree.Accept(typeCheckVisitor, NameSpace.TopLevelNames);
+        SemanticCheckVisitor semanticCheckVisitor = new SemanticCheckVisitor();
+        tree.Accept(semanticCheckVisitor, NameSpace.TopLevelNames);
 
 
         // allow inspection of all the type annotations

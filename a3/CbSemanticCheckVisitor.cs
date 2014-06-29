@@ -1,4 +1,4 @@
-/*  CbTypeCheckVisitor.cs
+/*  CbSemanticCheckVisitor.cs
 
     Second stage of full type-checking on AST
 
@@ -18,7 +18,7 @@ using System.Diagnostics;
 namespace FrontEnd {
 
 
-public class TypeCheckVisitor: Visitor {
+public class SemanticCheckVisitor: Visitor {
     NameSpace ns;  // namespace for all top-level names and names opened with 'using' clauses
     CbClass currentClass;  // current class being checked (null if there isn't one)
     CbMethod currentMethod;  // current method being checked (null if there isn't one)
@@ -26,7 +26,7 @@ public class TypeCheckVisitor: Visitor {
     int loopNesting;  // current depth of nesting of while loops
 
     // constructor
-    public TypeCheckVisitor( ) {
+    public SemanticCheckVisitor( ) {
         ns = NameSpace.TopLevelNames;  // get the top-level namespace
         currentMethod = null;
         sy = new SymTab();
