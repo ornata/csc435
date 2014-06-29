@@ -25,16 +25,25 @@ public enum NodeType {
     IntType, StringType, CharType, VoidType
 };
 
+public enum CbKind {
+    None, Variable, ClassName
+}
+
 public abstract class AST {
 
     public AST( NodeType tag, int ln ) {
         this.Tag = tag;
         LineNumber = ln;
+        Kind = CbKind.None;
     }
 
     // The datatype of the subtree -- note: statements and other constructs
     // without values will leave the value of Type as null
     public CbType Type { get; set; }
+    
+    // Additional information about the subtree sometimes needed for checking
+    // purposes.
+    public CbKind Kind { get; set; }
 
     public int LineNumber {  get; protected set; }
 
