@@ -12,7 +12,8 @@ GPLEX = ../gplex-distro-1.2.1/binaries/gplex.exe
 
 # sources without generated files
 SOURCES_NOGEN = cbc.cs CbSymTab.cs CbTLVisitor.cs CbType.cs CbTopLevel.cs \
-CbVisitor.cs CbPrVisitor.cs CbAST.cs ShiftReduceParser.cs CbTypeVisitor.cs
+CbVisitor.cs CbPrVisitor.cs CbAST.cs ShiftReduceParser.cs CbTypeVisitor.cs \
+CbTypeCheckVisitor.cs
 
 # generated source files
 SOURCES_GEN = CbLexer.cs CbParser.cs

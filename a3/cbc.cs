@@ -138,8 +138,12 @@ public class Start {
         ... instantiate type-checking visitor(s) and invoke it/them here
 */
 
-        TypeVisitor typeChecker = new TypeVisitor(NameSpace.TopLevelNames);
-        tree.Accept(typeChecker, NameSpace.TopLevelNames);
+        TypeVisitor typeVisitor = new TypeVisitor(NameSpace.TopLevelNames);
+        tree.Accept(typeVisitor, NameSpace.TopLevelNames);
+
+        TypeCheckVisitor typeCheckVisitor = new TypeCheckVisitor(NameSpace.TopLevelNames);
+        tree.Accept(typeCheckVisitor, NameSpace.TopLevelNames);
+
 
 /*
 
