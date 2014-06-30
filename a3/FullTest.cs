@@ -12,10 +12,15 @@ class Foo {
     public static void Main() {
         Foo f;
         f = null;
+        f = this;
         f = new Bar();
         int r;
         r = null; // should not compile
         r = f.Umm(3,4);
+
+        Bar b;
+        b = this; // should not compile
+
         string s;
         s = null; // should not compile
         int x;
@@ -55,6 +60,9 @@ class Foo {
         5++; // shouldn't work
         x++; // should be fine
         str++; // shouldn't work
+
+        this = this; // should not compile
+        this = f; // should not compile
 
         int L;
         L = "hello".Length;

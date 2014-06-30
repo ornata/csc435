@@ -96,6 +96,10 @@ public class SemanticCheckVisitor: Visitor {
             string methname = ((AST_leaf)(node[1])).Sval;
             currentMethod = currentClass.Members[methname] as CbMethod;
             sy.Empty();
+            // add secret "this" argument
+            SymTabEntry thisBinding = sy.Binding("this", node[2].LineNumber);
+            thisBinding.Type = currentClass;
+            thisBinding.Kind = CbKind.Constant;
             // add each formal parameter to the symbol table
             AST_kary formals = (AST_kary)node[2];
             for(int i=0; i<formals.NumChildren; i++) {
@@ -103,6 +107,7 @@ public class SemanticCheckVisitor: Visitor {
                 string name = ((AST_leaf)formal[1]).Sval;
                 SymTabEntry newBinding = sy.Binding(name, formal[1].LineNumber);
                 newBinding.Type = formal[0].Type;
+                newBinding.Kind = CbKind.Variable;
             }
             sy.Enter();
             // now type-check the method body
@@ -119,6 +124,7 @@ public class SemanticCheckVisitor: Visitor {
                 string name = local.Sval;
                 SymTabEntry en = sy.Binding(name, local.LineNumber);
                 en.Type = node[0].Type;
+                en.Kind = CbKind.Variable;
             }
             break;
         case NodeType.Assign:
@@ -418,7 +424,7 @@ public class SemanticCheckVisitor: Visitor {
             SymTabEntry local = sy.LookUp(name);
             if (local != null) {
                 node.Type = local.Type;
-                node.Kind = CbKind.Variable;
+                node.Kind = local.Kind;
                 return;
             }
             CbMember mem;
