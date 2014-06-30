@@ -265,9 +265,18 @@ public class SemanticCheckVisitor: Visitor {
         case NodeType.UnaryPlus:
         case NodeType.UnaryMinus:
             node[0].Accept(this,data);
-            /* TODO ... check types */
-            node.Type = CbType.Int;
+
+            if (isIntegerType(node[0].Type)) {
+                node.Type = CbType.Int;
+            }
+
+            else {
+                Start.SemanticError(node[0].LineNumber, "Unary operations are only valid for integer and char types.");
+                node.Type = CbType.Error;
+            }
+
             break;
+
         case NodeType.Array:
             node[0].Accept(this,data);
             node.Type = CbType.Array(node[0].Type);
@@ -275,9 +284,29 @@ public class SemanticCheckVisitor: Visitor {
         case NodeType.Index:
             node[0].Accept(this,data);
             node[1].Accept(this,data);
-            /* TODO ... check types */
-            node.Type = CbType.Error;  // FIX THIS
+
+            if (node[1].Type != CbType.Char && node[1].Type != CbType.Int) {
+                Start.SemanticError(node[0].LineNumber, "Cannot index string or array using an object whose type is not 'int' or 'char'.");
+                node.Type = CbType.Error;
+            }
+
+            else {
+                if (node[0].Type == CbType.String){
+                    node.Type = CbType.Char;
+                }
+
+                else if(node[0].Type is CFArray) {
+                    node.Type = (node[0].Type as CFArray).ElementType; // doesn't work... :(
+                }
+
+                else {
+                    Start.SemanticError(node[0].LineNumber, "Cannot index an object whose type is not 'string' or 'array'.");
+                    node.Type = CbType.Error;
+                }
+            }
+                
             break;
+
         case NodeType.Add:
         case NodeType.Sub:
         case NodeType.Mul:
