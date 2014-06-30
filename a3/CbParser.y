@@ -168,7 +168,7 @@ Statement:      Designator '=' Expr ';'
         |       Kwd_break ';'
                 { $$ = AST.Leaf(NodeType.Break, LineNumber); }
         |       Kwd_return ';'
-                { $$ = AST.NonLeaf(NodeType.Return, LineNumber, null); }
+                { $$ = AST.NonLeaf(NodeType.Return, LineNumber, new AST[]{null}); }
         |       Kwd_return Expr ';'
                 { $$ = AST.NonLeaf(NodeType.Return, $2.LineNumber, $2); }
         |       Block

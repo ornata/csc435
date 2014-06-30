@@ -143,13 +143,29 @@ public class SemanticCheckVisitor: Visitor {
             loopNesting--;
             break;
         case NodeType.Return:
-            if (node[0] == null) {
-                if (currentMethod.ResultType != CbType.Void)
-                    Start.SemanticError(node.LineNumber, "missing return value for method");
-                break;
+            CbType typeToReturn = null;
+            if (node[0] != null) {
+                // visit the returned expression if there is one
+                node[0].Accept(this,data);
+                typeToReturn = node[0].Type;
             }
-            node[0].Accept(this,data);
-            /* TODO ... check type of method result */
+
+            if (currentMethod.ResultType != CbType.Void) {
+                // in this case, we are in a non-void-returning method
+                if (typeToReturn == null) {
+                    // returned void in a non-void returning method
+                    Start.SemanticError(node.LineNumber, "missing return value for method");
+                } else if (!isAssignmentCompatible(currentMethod.ResultType, typeToReturn)) {
+                    Start.SemanticError(node.LineNumber, "incompatible return type for method");
+                }
+            } else {
+                // in this case, we are in a void-returning method
+                if (typeToReturn != null) {
+                    // tried to return a value from a void function
+                    Start.SemanticError(node.LineNumber, "void methods cannot return values");
+                }
+            }
+
             break;
         case NodeType.Call:
             node[0].Accept(this,data); // method name (could be a dotted expression)
