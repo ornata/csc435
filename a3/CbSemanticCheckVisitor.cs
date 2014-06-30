@@ -506,6 +506,8 @@ public class SemanticCheckVisitor: Visitor {
 
             if (classes.Contains(curr.Parent)) {
                 Start.SemanticError(lineNumber, "cyclic dependency in class hierarchy for " + c.Name);
+                // attempt to recover from the error by cutting the cycle
+                curr.Parent = CbType.Object;
                 return;
             }
 
