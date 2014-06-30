@@ -249,12 +249,22 @@ public class SemanticCheckVisitor: Visitor {
             node[0].Accept(this,data);
             node[1].Accept(this,data);
             /* TODO ... check types */
+
             node.Type = CbType.Array(node[0].Type);
             break;
+
         case NodeType.NewClass:
             node[0].Accept(this,data);
             /* TODO ... check that operand is a class */
-            node.Type = node[0].Type;
+            if (node[0].Type is CbClass) {
+                node.Type = node[0].Type;
+            }
+
+            else {
+                Start.SemanticError(node[0].LineNumber, "Cannot use 'new' to create non-class types.");
+                node.Type = CbType.Error;
+            }
+
             break;
 
         case NodeType.PlusPlus:
