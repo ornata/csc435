@@ -18,6 +18,39 @@ class Foo {
         r = f.Umm(3,4);
         string s;
         s = null; // should not compile
+        int x;
+        x = 0;
+        int y;
+        y = 1;
+        string str;
+        str = "hello";
+        string str2;
+        str2 = "world";
+        string str3;
+        str3 = str + str2; // should work
+        str3 = str + x; // shouldn't work
+
+        if (x <= y) {
+            x = 2;
+        }
+
+        if(x < y && x > 2) {
+            str = "goodbye";
+        }
+
+        if (x && y) { // shouldn't compile
+            y = 22;
+        }
+
+        if (x > str) { // shouldn't compile
+            y = 7;
+        }
+
+        int uplus;
+        uplus = +x;
+        int uminus;
+        uminus = -y;
+        str2 = -str3; // shouldn't compile
 
         int L;
         L = "hello".Length;
