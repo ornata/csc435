@@ -17,11 +17,16 @@ class Foo {
         int r;
         r = null; // should not compile
         r = f.Umm(3,4);
-        string s;
-        s = null; // should not compile
 
         Bar b;
         b = this; // should not compile
+
+        string s;
+        s = null; // should not compile
+
+        this = this; // should not compile
+
+        this = f; // should not compile
 
         int L;
         L = "hello".Length;
