@@ -34,7 +34,6 @@ public class TypeVisitor : Visitor {
             string name = (node[1] as AST_leaf).Sval;
 
             CbConst conzt = clazz.Members[name] as CbConst;
-
             // get the type of the const
             if (node[0] == null) {
                 conzt.Type = CbType.Void;

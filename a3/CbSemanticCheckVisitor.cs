@@ -166,6 +166,7 @@ public class SemanticCheckVisitor: Visitor {
                 CbMember mem;
                 if (lhstype.Members.TryGetValue(rhs,out mem)) {
                     node.Type = mem.Type;
+
                     if (mem is CbField)
                         node.Kind = CbKind.Variable;
                     else if (mem is CbConst)
@@ -181,9 +182,18 @@ public class SemanticCheckVisitor: Visitor {
                             Start.SemanticError(node[1].LineNumber,
                                 "member cannot be accessed via a reference, use classname instead");
 
-                        // "Length" field of String is immutable
-                        if (lhstype == CbType.String && rhs == "Length") {
-                            node.Kind = CbKind.Constant;
+                        if (lhstype == CbType.String) {
+                            // "Length" field of String is immutable
+                            if (rhs == "Length") {
+                                node.Kind = CbKind.Constant;
+                            }
+                            
+                            // "Length" is the only valid field for literals
+                            if (node[0].Kind == CbKind.Literal && rhs != "Length") {
+                                Start.SemanticError(node[1].LineNumber,
+                                    "The only property for string literals is \"Length\"");
+                                node.Type = CbType.Error;
+                            }
                         }
                     }
                 } else {
@@ -319,7 +329,7 @@ public class SemanticCheckVisitor: Visitor {
                 node.Type = new CbNameSpaceContext(lhsns);
                 break;
             }
-            node.Type = CbType.Error;;
+            node.Type = CbType.Error;
             Start.SemanticError(node.LineNumber, "{0} is unknown", name);
             break;
         case NodeType.Break:
@@ -328,15 +338,19 @@ public class SemanticCheckVisitor: Visitor {
             break;
         case NodeType.Null:
             node.Type = CbType.Null;
+            node.Kind = CbKind.Literal;
             break;
         case NodeType.IntConst:
             node.Type = CbType.Int;
+            node.Kind = CbKind.Literal;
             break;
         case NodeType.StringConst:
             node.Type = CbType.String;
+            node.Kind = CbKind.Literal;
             break;
         case NodeType.CharConst:
             node.Type = CbType.Char;
+            node.Kind = CbKind.Literal;
             break;
         case NodeType.Empty:
             break;
