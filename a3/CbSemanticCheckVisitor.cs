@@ -87,7 +87,7 @@ public class SemanticCheckVisitor: Visitor {
         case NodeType.Const:
             node[2].Accept(this,data);  // get type of value
             if (!isAssignmentCompatible(node[0].Type,node[2].Type))
-                Start.SemanticError(node.LineNumber, "invalid initialization for const");
+                Start.SemanticError(node.LineNumber, "Invalid initialization for const.");
             break;
         case NodeType.Field:
             break;
@@ -125,9 +125,9 @@ public class SemanticCheckVisitor: Visitor {
             node[0].Accept(this,data);
             node[1].Accept(this,data);
             if (node[0].Kind != CbKind.Variable)
-                Start.SemanticError(node.LineNumber, "target of assignment is not a variable");
+                Start.SemanticError(node.LineNumber, "Target of assignment is not a variable.");
             if (!isAssignmentCompatible(node[0].Type, node[1].Type))
-                Start.SemanticError(node.LineNumber, "invalid types in assignment statement");
+                Start.SemanticError(node.LineNumber, "Invalid types in assignment statement.");
             break;
         case NodeType.If:
             node[0].Accept(this,data);
@@ -154,15 +154,15 @@ public class SemanticCheckVisitor: Visitor {
                 // in this case, we are in a non-void-returning method
                 if (typeToReturn == null) {
                     // returned void in a non-void returning method
-                    Start.SemanticError(node.LineNumber, "missing return value for method");
+                    Start.SemanticError(node.LineNumber, "Missing return value for method.");
                 } else if (!isAssignmentCompatible(currentMethod.ResultType, typeToReturn)) {
-                    Start.SemanticError(node.LineNumber, "incompatible return type for method");
+                    Start.SemanticError(node.LineNumber, "Incompatible return type for method.");
                 }
             } else {
                 // in this case, we are in a void-returning method
                 if (typeToReturn != null) {
                     // tried to return a value from a void function
-                    Start.SemanticError(node.LineNumber, "void methods cannot return values");
+                    Start.SemanticError(node.LineNumber, "Void methods cannot return values.");
                 }
             }
 
@@ -191,12 +191,12 @@ public class SemanticCheckVisitor: Visitor {
                     if (node[0].Kind == CbKind.ClassName) {
                         // mem has to be a static member
                         if (!mem.IsStatic)
-                            Start.SemanticError(node[1].LineNumber, "static member required");
+                            Start.SemanticError(node[1].LineNumber, "Static member required.");
                     } else {
                         // mem has to be an instance member
                         if (mem.IsStatic)
                             Start.SemanticError(node[1].LineNumber,
-                                "member cannot be accessed via a reference, use classname instead");
+                                "Member cannot be accessed via a reference, use classname instead.");
 
                         if (lhstype == CbType.String || lhstype is CFArray) {
                             // "Length" field of String is immutable
@@ -236,7 +236,7 @@ public class SemanticCheckVisitor: Visitor {
             node[0].Accept(this,data);
             node[1].Accept(this,data);
             if (!isCastable(node[0].Type, node[1].Type))
-                Start.SemanticError(node[1].LineNumber, "invalid cast");
+                Start.SemanticError(node[1].LineNumber, "Invalid cast.");
             node.Type = node[0].Type;
             break;
         case NodeType.NewArray:
@@ -250,12 +250,22 @@ public class SemanticCheckVisitor: Visitor {
             /* TODO ... check that operand is a class */
             node.Type = node[0].Type;
             break;
+
         case NodeType.PlusPlus:
         case NodeType.MinusMinus:
             node[0].Accept(this,data);
             /* TODO ... check types and operand must be a variable */
-            node.Type = node[0].Type;
+            if (isIntegerType(node[0].Type) && node[0].Kind == CbKind.Variable) {
+                node.Type = node[0].Type;
+            }
+
+            else {
+                Start.SemanticError(node[0].LineNumber, "Post increment/decrement may only be applied to integer-value variables.");
+                node.Type = CbType.Error;
+            }
+
             break;
+
         case NodeType.UnaryPlus:
         case NodeType.UnaryMinus:
             node[0].Accept(this,data);
@@ -274,7 +284,9 @@ public class SemanticCheckVisitor: Visitor {
         case NodeType.Array:
             node[0].Accept(this,data);
             node.Type = CbType.Array(node[0].Type);
+
             break;
+
         case NodeType.Index:
             node[0].Accept(this,data);
             node[1].Accept(this,data);
@@ -335,7 +347,7 @@ public class SemanticCheckVisitor: Visitor {
             }
 
             else {
-                Start.SemanticError(node[1].LineNumber, "invalid arithmetic expression");
+                Start.SemanticError(node[0].LineNumber, "Invalid arithmetic expression; must be between 'int' and 'char' types or 'string' types.");
                 node.Type = CbType.Error;
             }
 
@@ -353,7 +365,7 @@ public class SemanticCheckVisitor: Visitor {
             }
 
             else {
-                Start.SemanticError(node[1].LineNumber, "invalid comparison");
+                Start.SemanticError(node[0].LineNumber, "Comparison between two non-assignment compatible values.");
                 node.Type = CbType.Error;
             }
 
@@ -371,7 +383,7 @@ public class SemanticCheckVisitor: Visitor {
             }
 
             else {
-                Start.SemanticError(node[1].LineNumber, "invalid comparison");
+                Start.SemanticError(node[0].LineNumber, "Ordered comparisons must be between objects of type 'char' and type 'int'.");
                 node.Type = CbType.Error;
             }
                
@@ -387,7 +399,7 @@ public class SemanticCheckVisitor: Visitor {
                 }
 
                 else {
-                    Start.SemanticError(node[1].LineNumber, "boolean operations can only be performed on boolean operands");
+                    Start.SemanticError(node[0].LineNumber, "Boolean operations can only be performed on boolean operands");
                     node.Type = CbType.Error;
                 }
 

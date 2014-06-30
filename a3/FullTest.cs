@@ -52,6 +52,10 @@ class Foo {
         uminus = -y;
         str2 = -str3; // shouldn't compile
 
+        5++; // shouldn't work
+        x++; // should be fine
+        str++; // shouldn't work
+
         int L;
         L = "hello".Length;
 
