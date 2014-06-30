@@ -147,8 +147,9 @@ public class AST_nonleaf : AST {
 
     // constructor for any number of children
     public AST_nonleaf( NodeType tag, int ln,
-            params AST[] children ) : base(tag,ln) {
-        this.children = children;
+            params AST[] children ) : base(tag,ln)
+    {
+        this.children = children == null ? new AST[]{null} : children;
     }
 
     public override int NumChildren { get{ return children.Length; } }
