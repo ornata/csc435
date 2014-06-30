@@ -41,10 +41,19 @@ class Foo {
 
         // should not be able to assign to a const
         theAnswer = 62; // should error
+
+        return 5; // should error (returning non-void from void function)
+
+        return; // should not error (void return from void function)
     }
 
     public virtual int Ummm( int a, int b ) {
         System.Console.WriteLine("This is Foo");
+
+        return; // should error (void return from non-void function)
+
+        return "blah"; // should error (incorrect type return)
+
         return a+b;
     }
 
