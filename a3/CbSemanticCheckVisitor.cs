@@ -36,7 +36,7 @@ public class SemanticCheckVisitor: Visitor {
     // Note: the data parameter for the Visit methods is never used
     // It is always null (or whatever is passed on the initial call)
 
-	public override void Visit(AST_kary node, object data) {
+    public override void Visit(AST_kary node, object data) {
         switch(node.Tag) {
         case NodeType.ClassList:
             // visit each class declared in the program
@@ -66,7 +66,7 @@ public class SemanticCheckVisitor: Visitor {
         }
     }
 
-	public override void Visit( AST_nonleaf node, object data ) {
+    public override void Visit( AST_nonleaf node, object data ) {
         switch(node.Tag) {
         case NodeType.Program:
             node[1].Accept(this, data);  // visit class declarations
@@ -168,6 +168,9 @@ public class SemanticCheckVisitor: Visitor {
                     node.Type = mem.Type;
                     if (mem is CbField)
                         node.Kind = CbKind.Variable;
+                    else if (mem is CbConst)
+                        node.Kind = CbKind.Constant;
+
                     if (node[0].Kind == CbKind.ClassName) {
                         // mem has to be a static member
                         if (!mem.IsStatic)
@@ -177,6 +180,11 @@ public class SemanticCheckVisitor: Visitor {
                         if (mem.IsStatic)
                             Start.SemanticError(node[1].LineNumber,
                                 "member cannot be accessed via a reference, use classname instead");
+
+                        // "Length" field of String is immutable
+                        if (lhstype == CbType.String && rhs == "Length") {
+                            node.Kind = CbKind.Constant;
+                        }
                     }
                 } else {
                     Start.SemanticError(node[1].LineNumber,
@@ -185,11 +193,10 @@ public class SemanticCheckVisitor: Visitor {
                 }
                 break;
             }
-            if (rhs == "Length") {
-                // lhs has to be an array or a string
-                if (node[0].Type != CbType.String && !(node[0].Type is CFArray))
-                    Start.SemanticError(node[1].LineNumber, "member Length not found");
+            if (rhs == "Length" && (node[0].Type is CFArray)) {
+                // array lengths are immutable ints
                 node.Type = CbType.Int;
+                node.Kind = CbKind.Constant;
                 break;
             }
             CbNameSpaceContext lhsns = node[0].Type as CbNameSpaceContext;
@@ -279,7 +286,7 @@ public class SemanticCheckVisitor: Visitor {
         }
     }
 
-	public override void Visit(AST_leaf node, object data) {
+    public override void Visit(AST_leaf node, object data) {
         switch(node.Tag) {
         case NodeType.Ident:
             string name = node.Sval;

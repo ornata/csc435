@@ -26,7 +26,7 @@ public enum NodeType {
 };
 
 public enum CbKind {
-    None, Variable, ClassName
+    None, Variable, Constant, ClassName
 }
 
 public abstract class AST {

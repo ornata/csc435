@@ -19,6 +19,7 @@ class Foo {
         L = "hello".Length;
 
         hiThere.Wength = 3;
+
         hiThere.Length = 3;
     }
 
