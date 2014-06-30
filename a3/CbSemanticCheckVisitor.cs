@@ -369,12 +369,18 @@ public class SemanticCheckVisitor: Visitor {
     }
 
     private void performParentCheck(CbClass c, int lineNumber) {
-        /* TODO
-           code to check that c's ultimate ancestor is Object.
-           Be careful not to get stuck if the parent relationship
-           contains a cycle.
-           The lineNumber parameter is used in error messages.
-        */
+        ISet<CbClass> classes = new HashSet<CbClass>();
+        CbClass curr = c;
+        while (curr != null) {
+            classes.Add(curr);
+
+            if (classes.Contains(curr.Parent)) {
+                Start.SemanticError(lineNumber, "cyclic dependency in class hierarchy for " + c.Name);
+                return;
+            }
+
+            curr = curr.Parent;
+        }
     }
     
     private bool isAssignmentCompatible(CbType dest, CbType src) {

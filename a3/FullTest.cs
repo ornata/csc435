@@ -59,3 +59,14 @@ class Bar : Foo {
         return a-b;
     }
 }
+
+// class with direct cyclic inheritance dependency
+class Loop : Loop {
+}
+
+// class with 1-level cyclic inheritance dependency
+class Loop1 : Loop2 {
+}
+
+class Loop2 : Loop1 {
+}
