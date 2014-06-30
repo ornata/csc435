@@ -12,12 +12,16 @@ class Foo {
     public static void Main() {
         Foo f;
         f = null;
+        f = this;
         f = new Bar();
         int r;
         r = null; // should not compile
         r = f.Umm(3,4);
         string s;
         s = null; // should not compile
+
+        Bar b;
+        b = this; // should not compile
 
         int L;
         L = "hello".Length;

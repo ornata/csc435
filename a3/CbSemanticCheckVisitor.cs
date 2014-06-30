@@ -96,6 +96,9 @@ public class SemanticCheckVisitor: Visitor {
             string methname = ((AST_leaf)(node[1])).Sval;
             currentMethod = currentClass.Members[methname] as CbMethod;
             sy.Empty();
+            // add secret "this" argument
+            SymTabEntry thisBinding = sy.Binding("this", node[1].LineNumber);
+            thisBinding.Type = currentClass;
             // add each formal parameter to the symbol table
             AST_kary formals = (AST_kary)node[2];
             for(int i=0; i<formals.NumChildren; i++) {
