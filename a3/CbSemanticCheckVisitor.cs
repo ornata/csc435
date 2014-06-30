@@ -363,7 +363,11 @@ public class SemanticCheckVisitor: Visitor {
             }
 
             else {
-                Start.SemanticError(node[0].LineNumber, "Invalid arithmetic expression; must be between 'int' and 'char' types or 'string' types.");
+                if (node.Tag == NodeType.Add) {
+                    Start.SemanticError(node[0].LineNumber, "Invalid arithmetic expression; must be between 'int' and 'char' types or 'string' types.");
+                } else {
+                    Start.SemanticError(node[0].LineNumber, "Invalid arithmetic expression; must be between 'int' or 'char' types.");
+                }
                 node.Type = CbType.Error;
             }
 
