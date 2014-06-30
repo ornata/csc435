@@ -176,7 +176,7 @@ public class SemanticCheckVisitor: Visitor {
         case NodeType.Call:
             node[0].Accept(this,data); // method name (could be a dotted expression)
             node[1].Accept(this,data); // actual parameters
-            /* TODO ... check types */
+            
             node.Type = CbType.Error;  // FIX THIS
             break;
         case NodeType.Dot:
@@ -441,30 +441,54 @@ public class SemanticCheckVisitor: Visitor {
         switch(node.Tag) {
         case NodeType.Ident:
             string name = node.Sval;
+
+            // look through local declarations
             SymTabEntry local = sy.LookUp(name);
             if (local != null) {
                 node.Type = local.Type;
                 node.Kind = local.Kind;
                 break;
             }
+
+            // look through this class and all its parents
             CbMember mem;
-            if (currentClass.Members.TryGetValue(name,out mem)) {
-                node.Type = mem.Type;
-                if (mem is CbField)
-                    node.Kind = CbKind.Variable;
+            bool foundMember = false;
+            for (CbClass curr = currentClass; curr != null; curr = curr.Parent) {
+                Console.WriteLine("Looking through members of " + curr.Name);
+                if (curr.Members.TryGetValue(name,out mem)) {
+                    Console.WriteLine("Found member in " + curr.Name);
+                    node.Type = mem.Type;
+                    Console.WriteLine("It has type " + node.Type.ToString());
+
+                    if (mem is CbField) {
+                        node.Kind = CbKind.Variable;
+                    }
+
+                    foundMember = true;
+                    break;
+                }
+            }
+
+            if (foundMember) {
                 break;
             }
+
+            // look through the top-level namespace for a class
             CbClass t = ns.LookUp(name) as CbClass;
             if (t != null) {
                 node.Type = t;
                 node.Kind = CbKind.ClassName;
                 break;
             }
+
+            // look through the top-level namespace for a namespace
             NameSpace lhsns = ns.LookUp(name) as NameSpace;
             if (lhsns != null) {
                 node.Type = new CbNameSpaceContext(lhsns);
                 break;
             }
+
+            // couldn't find identifier
             node.Type = CbType.Error;
             Start.SemanticError(node.LineNumber, "{0} is unknown", name);
             break;

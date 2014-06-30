@@ -125,7 +125,13 @@ class Bar : Foo {
 
     public override int Umm( int aa, int bb ) {
         System.Console.WriteLine("This is Bar");
-        return a-b;
+
+        return a-b; // should error (a,b are inherited, but a is int and b is string)
+        return a-c; // should not error (a,b are inherited. a is int, c is char)
+
+        return c; // should not error (c is inherited)
+
+        return aa * bb; // should not error (both are locals)
     }
 }
 
