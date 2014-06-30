@@ -60,7 +60,7 @@ class Foo {
         x++; // should be fine
         str++; // shouldn't work
 
-        y = new string(); // should not compile
+        y = new System(); // should not compile
 
         this = this; // should not compile
         this = f; // should not compile
