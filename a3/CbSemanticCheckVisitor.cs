@@ -182,6 +182,8 @@ public class SemanticCheckVisitor: Visitor {
         case NodeType.Dot:
             node[0].Accept(this,data);
             string rhs = ((AST_leaf)node[1]).Sval;
+
+            // check if we're accessing a class
             CbClass lhstype = node[0].Type as CbClass;
             if (lhstype != null) {
                 // rhs needs to be a member of the lhs class
@@ -225,6 +227,8 @@ public class SemanticCheckVisitor: Visitor {
                 }
                 break;
             }
+
+            // check if we're accessing a namespace
             CbNameSpaceContext lhsns = node[0].Type as CbNameSpaceContext;
             if (lhsns != null) {
                 lhstype = lhsns.Space.LookUp(rhs) as CbClass;
@@ -234,6 +238,8 @@ public class SemanticCheckVisitor: Visitor {
                     break;
                 }
             }
+            
+            // couldn't find it
             Start.SemanticError(node[1].LineNumber, "member {0} does not exist", rhs);
             node.Type = CbType.Error;
             break;
