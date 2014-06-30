@@ -315,24 +315,29 @@ public class SemanticCheckVisitor: Visitor {
                 Start.SemanticError(node[1].LineNumber, "invalid arithmetic expression");
                 node.Type = CbType.Error;
             }
-                    
+
             break;
+
         case NodeType.Equals:
         case NodeType.NotEquals:
-            node[0].Accept(this,data);
-            node[1].Accept(this,data);
-            node.Type = CbType.Bool;           
-            /* TODO ... check types */
-            break;
         case NodeType.LessThan:
         case NodeType.GreaterThan:
         case NodeType.LessOrEqual:
         case NodeType.GreaterOrEqual:
             node[0].Accept(this,data);
             node[1].Accept(this,data);
-            node.Type = CbType.Bool;
-            /* TODO ... check types */
+
+            if (isIntegerType(node[0].Type) && isIntegerType(node[1].Type) {
+                node.Type = CbType.Bool;
+            }
+
+            else {
+                Start.SemanticError(node[1].LineNumber, "invalid comparison");
+                node.Type = CbType.Error;
+            }
+               
             break;
+
         case NodeType.And:
         case NodeType.Or:
             node[0].Accept(this,data);
