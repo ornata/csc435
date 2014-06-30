@@ -439,7 +439,7 @@ public class SemanticCheckVisitor: Visitor {
             if (local != null) {
                 node.Type = local.Type;
                 node.Kind = local.Kind;
-                return;
+                break;
             }
             CbMember mem;
             if (currentClass.Members.TryGetValue(name,out mem)) {
