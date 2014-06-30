@@ -320,6 +320,22 @@ public class SemanticCheckVisitor: Visitor {
 
         case NodeType.Equals:
         case NodeType.NotEquals:
+            node[0].Accept(this,data);
+            node[1].Accept(this,data);
+
+            if (isAssignmentCompatible(node[0].Type, node[1].Type) ||
+                isAssignmentCompatible(node[1].Type, node[0].Type) ||
+                node[0].Type == CbType.Null && node[1].Type == CbType.Null) {
+                node.Type = CbType.Bool;
+            }
+
+            else {
+                Start.SemanticError(node[1].LineNumber, "invalid comparison");
+                node.Type = CbType.Error;
+            }
+
+            break;
+
         case NodeType.LessThan:
         case NodeType.GreaterThan:
         case NodeType.LessOrEqual:
