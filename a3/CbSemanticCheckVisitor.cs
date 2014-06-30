@@ -454,11 +454,8 @@ public class SemanticCheckVisitor: Visitor {
             CbMember mem;
             bool foundMember = false;
             for (CbClass curr = currentClass; curr != null; curr = curr.Parent) {
-                Console.WriteLine("Looking through members of " + curr.Name);
                 if (curr.Members.TryGetValue(name,out mem)) {
-                    Console.WriteLine("Found member in " + curr.Name);
                     node.Type = mem.Type;
-                    Console.WriteLine("It has type " + node.Type.ToString());
 
                     if (mem is CbField) {
                         node.Kind = CbKind.Variable;
