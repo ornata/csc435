@@ -453,7 +453,7 @@ public class SemanticCheckVisitor: Visitor {
             // look through this class and all its parents
             CbMember mem;
             bool foundMember = false;
-            for (CbClass curr = currentClass; curr != null; curr = curr.Parent) {
+            for (CbClass curr = currentClass; curr != null && !foundMember; curr = curr.Parent) {
                 if (curr.Members.TryGetValue(name,out mem)) {
                     node.Type = mem.Type;
 
@@ -462,7 +462,6 @@ public class SemanticCheckVisitor: Visitor {
                     }
 
                     foundMember = true;
-                    break;
                 }
             }
 
