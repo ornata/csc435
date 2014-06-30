@@ -269,8 +269,37 @@ public class SemanticCheckVisitor: Visitor {
         case NodeType.Mod:
             node[0].Accept(this,data);
             node[1].Accept(this,data);
-            /* TODO ... check types */
-            node.Type = CbType.Error;  // FIX THIS
+
+            // Addition operator doubles as string concatenation
+            if(node.Tag == NodeType.Add){
+                if (node[0].Type == CbType.String && node[1].Type == CbType.String) {
+                    node.Type = CbType.String;
+                    break;
+                }
+            }
+                
+            // Otherwise, just handle an arithmetic expression
+            if (node[0].Type == CbType.Int && node[1].Type == CbType.Char) {
+                node.Type = CbType.Int;
+            }
+
+            else if (node[0].Type == CbType.Char && node[1].Type == CbType.Int) {
+                node.Type = CbType.Int;
+            }
+
+            else if (node[0].Type == CbType.Int && node[0].Type == node[1].Type) {
+                node.Type = CbType.Int;
+            }
+
+            else if (node[0].Type == CbType.Char && node[0].Type == node[1].Type) {
+                node.Type = CbType.Char;
+            }
+
+            else {
+                Start.SemanticError(node[1].LineNumber, "invalid arithmetic expression");
+                node.Type = CbType.Error;
+            }
+                    
             break;
         case NodeType.Equals:
         case NodeType.NotEquals:
@@ -396,6 +425,8 @@ public class SemanticCheckVisitor: Visitor {
         }
         return false;
     }
+
+
     
     private void checkTypeSyntax(AST n) {
         /* TODO
@@ -428,7 +459,7 @@ public class SemanticCheckVisitor: Visitor {
         }
         return true;
     }
-    
+
     private void checkOverride(AST_nonleaf node) {
         string name = currentMethod.Name;
         // search for a member in any ancestor with same name
