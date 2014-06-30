@@ -198,7 +198,7 @@ public class SemanticCheckVisitor: Visitor {
                             Start.SemanticError(node[1].LineNumber,
                                 "member cannot be accessed via a reference, use classname instead");
 
-                        if (lhstype == CbType.String) {
+                        if (lhstype == CbType.String || lhstype is CFArray) {
                             // "Length" field of String is immutable
                             if (rhs == "Length") {
                                 node.Kind = CbKind.Constant;
@@ -217,12 +217,6 @@ public class SemanticCheckVisitor: Visitor {
                         "member {0} not found in class {1}", rhs, lhstype.Name);
                     node.Type = CbType.Error;
                 }
-                break;
-            }
-            if (rhs == "Length" && (node[0].Type is CFArray)) {
-                // array lengths are immutable ints
-                node.Type = CbType.Int;
-                node.Kind = CbKind.Constant;
                 break;
             }
             CbNameSpaceContext lhsns = node[0].Type as CbNameSpaceContext;

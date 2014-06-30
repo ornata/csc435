@@ -85,12 +85,13 @@ public abstract class CbType {
     }
 }
 
-public class CFArray: CbType {
+public class CFArray: CbClass {
     public CbType ElementType{ get; set; }
 
     // Do not call directly -- use CbType.Array(elt) instead
-    public CFArray( CbType elt ) {
+    public CFArray( CbType elt ) : base("_Array", null) {
         ElementType = elt;
+        AddMember(new CbField("Length", CbType.Int));
     }
 
     public override string ToString() {

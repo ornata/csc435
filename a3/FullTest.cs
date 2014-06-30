@@ -1,4 +1,4 @@
-// test of everything, but without a using clause
+using System;
 
 class Foo {
     public const int theAnswer = 42;
@@ -37,11 +37,21 @@ class Foo {
         arr = new int[25];
         L = arr.Length;
 
+        int[] arr2;
+        arr2 = arr;
+
         // should not be able to access non-existent array member
         L = arr.Wength; // should error
 
         // should not be able to assign to array length
         arr.Length = 10; // should error
+
+        Object o;
+        o = null; // should compile
+        o = arr; // should compile
+        o = f; // should compile
+        o = L; // shouldn't compile
+        o = hiThere; // should compile (?)
 
         // should not be able to assign to a const
         theAnswer = 62; // should error
