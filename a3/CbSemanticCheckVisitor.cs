@@ -435,13 +435,14 @@ public class SemanticCheckVisitor: Visitor {
         CbClass d = dest as CbClass;
         CbClass s = src as CbClass;
         if (d != null) {
-            if (src == CbType.Null) return true;
+            // Strings cannot be null
+            if (src == CbType.Null && dest != CbType.String) return true;
+
             if (s == null) return false;
             if (isAncestor(d,s)) return true;
         }
         return false;
     }
-
 
     
     private void checkTypeSyntax(AST n) {
@@ -469,7 +470,7 @@ public class SemanticCheckVisitor: Visitor {
     
     // tests if T1 == T2 or T1 is an ancestor of T2 in hierarchy
     private bool isAncestor( CbClass T1, CbClass T2 ) {
-        while(T1 != T2) {
+        while (T1 != T2) {
             T2 = T2.Parent;
             if (T2 == null) return false;
         }
