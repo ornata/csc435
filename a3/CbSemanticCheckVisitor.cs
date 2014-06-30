@@ -242,6 +242,10 @@ public class SemanticCheckVisitor: Visitor {
             /* TODO ... check types */
             node.Type = CbType.Int;
             break;
+        case NodeType.Array:
+            node[0].Accept(this,data);
+            node.Type = CbType.Array(node[0].Type);
+            break;
         case NodeType.Index:
             node[0].Accept(this,data);
             node[1].Accept(this,data);
@@ -282,7 +286,8 @@ public class SemanticCheckVisitor: Visitor {
             node.Type = CbType.Bool;
             break;
         default:
-            throw new Exception("Unexpected tag: "+node.Tag);  
+            throw new Exception(String.Format("Line {0} Unexpected tag: {1}",
+                                node.LineNumber, node.Tag));
         }
     }
 

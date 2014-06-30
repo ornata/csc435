@@ -21,6 +21,11 @@ class Foo {
         hiThere.Wength = 3;
 
         hiThere.Length = 3;
+
+        int[] arr;
+        arr = new int[25];
+        L = arr.Length;
+        arr.Length = 10;
     }
 
     public virtual int Ummm( int a, int b ) {
