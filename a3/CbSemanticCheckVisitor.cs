@@ -309,31 +309,61 @@ public class SemanticCheckVisitor: Visitor {
                 Start.SemanticError(node[1].LineNumber, "invalid arithmetic expression");
                 node.Type = CbType.Error;
             }
-                    
+
             break;
+
         case NodeType.Equals:
         case NodeType.NotEquals:
             node[0].Accept(this,data);
             node[1].Accept(this,data);
-            node.Type = CbType.Bool;           
-            /* TODO ... check types */
+
+            if (isAssignmentCompatible(node[0].Type, node[1].Type) ||
+                isAssignmentCompatible(node[1].Type, node[0].Type) ||
+                node[0].Type == CbType.Null && node[1].Type == CbType.Null) {
+                node.Type = CbType.Bool;
+            }
+
+            else {
+                Start.SemanticError(node[1].LineNumber, "invalid comparison");
+                node.Type = CbType.Error;
+            }
+
             break;
+
         case NodeType.LessThan:
         case NodeType.GreaterThan:
         case NodeType.LessOrEqual:
         case NodeType.GreaterOrEqual:
             node[0].Accept(this,data);
             node[1].Accept(this,data);
-            node.Type = CbType.Bool;
-            /* TODO ... check types */
+
+            if (isIntegerType(node[0].Type) && isIntegerType(node[1].Type)) {
+                node.Type = CbType.Bool;
+            }
+
+            else {
+                Start.SemanticError(node[1].LineNumber, "invalid comparison");
+                node.Type = CbType.Error;
+            }
+               
             break;
+
         case NodeType.And:
         case NodeType.Or:
             node[0].Accept(this,data);
             node[1].Accept(this,data);
-            /* TODO ... check types */
-            node.Type = CbType.Bool;
+
+                if (node[0].Type == CbType.Bool && node[1].Type == CbType.Bool) {
+                    node.Type = CbType.Bool;
+                }
+
+                else {
+                    Start.SemanticError(node[1].LineNumber, "boolean operations can only be performed on boolean operands");
+                    node.Type = CbType.Error;
+                }
+
             break;
+
         default:
             throw new Exception(String.Format("Line {0} Unexpected tag: {1}",
                                 node.LineNumber, node.Tag));
