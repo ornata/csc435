@@ -234,7 +234,7 @@ public class SemanticCheckVisitor: Visitor {
                     break;
                 }
             }
-            Start.SemanticError(node[1].LineNumber, "member {0} does not exist", rhs);
+            Start.SemanticError(node[1].LineNumber, "Member {0} does not exist.", rhs);
             node.Type = CbType.Error;
             break;
         case NodeType.Cast:
@@ -245,17 +245,36 @@ public class SemanticCheckVisitor: Visitor {
                 Start.SemanticError(node[1].LineNumber, "Invalid cast.");
             node.Type = node[0].Type;
             break;
+
         case NodeType.NewArray:
             node[0].Accept(this,data);
             node[1].Accept(this,data);
-            /* TODO ... check types */
+            bool foundError = false;
 
-            node.Type = CbType.Array(node[0].Type);
+            if (node[0].Type != CbType.Int &&
+                node[0].Type != CbType.Char &&
+                node[0].Type != CbType.String &&
+                !(node[0].Type is CbClass)) {
+                Start.SemanticError(node[0].LineNumber, "Array type must be 'int', 'char', 'string', or a class.");
+                node.Type = CbType.Error;
+                foundError = true;
+            }
+
+            if (node[1].Type != CbType.Int &&
+                node[1].Type != CbType.Char) {
+                Start.SemanticError(node[1].LineNumber, "Array length must be of type 'int' or 'char.");
+                node.Type = CbType.Error;
+                foundError = true;
+            }
+
+            if (foundError == false) {
+                node.Type = CbType.Array(node[0].Type);
+            }
+
             break;
 
         case NodeType.NewClass:
             node[0].Accept(this,data);
-            /* TODO ... check that operand is a class */
             if (node[0].Type is CbClass) {
                 node.Type = node[0].Type;
             }

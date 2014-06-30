@@ -35,6 +35,11 @@ class Foo {
         str3 = str + str2; // should work
         str3 = str + x; // shouldn't work
 
+        int[] array;
+        int[] array2;
+        array = new int[7]; // should work
+        array2 = new System[2]; // shouldn't work
+
         if (x <= y) {
             x = 2;
         }
