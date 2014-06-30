@@ -177,7 +177,36 @@ public class SemanticCheckVisitor: Visitor {
             node[0].Accept(this,data); // method name (could be a dotted expression)
             node[1].Accept(this,data); // actual parameters
             
-            node.Type = CbType.Error;  // FIX THIS
+            if (!(node[0].Type is CbMethodType)) {
+                Start.SemanticError(node[0].LineNumber, "Calls must be made on methods.");
+                node.Type = CbType.Error;
+            } else {
+                CbMethodType methodT = node[0].Type as CbMethodType;
+                CbMethod method = methodT.Method;
+
+                AST_kary actualAST = node[1] as AST_kary;
+
+                if (actualAST.NumChildren != method.ArgType.Count) {
+                    Start.SemanticError(node[1].LineNumber, "Incorrect number of arguments to method call."); 
+                    node.Type = CbType.Error;
+                } else {
+                    bool foundTypeError = false;
+
+                    for (int i = 0; i < actualAST.NumChildren && !foundTypeError; i++) {
+                        if (!isAssignmentCompatible(method.ArgType[i], actualAST[i].Type)) {
+                            foundTypeError = true;
+                        }
+                    }
+
+                    if (foundTypeError) {
+                        Start.SemanticError(node[1].LineNumber, "Incompatible argument types in method call.");
+                        node.Type = CbType.Error;
+                    } else {
+                        node.Type = method.ResultType;
+                    }
+                }
+            }
+
             break;
         case NodeType.Dot:
             node[0].Accept(this,data);

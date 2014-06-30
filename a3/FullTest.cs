@@ -37,6 +37,8 @@ class Foo {
 
         r = f.Umm(3,4); // should not compile (Foo has no Umm method)
         r = f.Ummm(3,4); // should compile
+        r = f.Ummm(34); // should not compile (wrong number of arguments)
+        r = f.Ummm("asdf",4); // should not compile (wrong types for arguments)
         f.SomeStaticFun(); // should not compile (static function called as a member)
         Foo.SomeStaticFun(); // should compile
 
