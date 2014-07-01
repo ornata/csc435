@@ -19,6 +19,9 @@ class Foo {
 
         Bar b;
         b = this; // should not compile (type mismatch, needs downcast)
+
+        string s;
+        s = hiThere;
     }
 
     public static void SomeStaticFun() {
@@ -26,6 +29,7 @@ class Foo {
 
     public static void Main() {
         SomeStaticFun(); // should compile
+        NotMain(); // should not compile (calling member function in static function)
 
         Foo f;
         f = null;
@@ -33,7 +37,7 @@ class Foo {
         f = new Bar();
         int r;
         r = null; // should not compile
-        r = a; // should not compile (a is static)
+        r = a; // should not compile (a is not static)
 
         r = f.Umm(3,4); // should not compile (Foo has no Umm method)
         r = f.Ummm(3,4); // should compile

@@ -96,10 +96,12 @@ public class SemanticCheckVisitor: Visitor {
             string methname = ((AST_leaf)(node[1])).Sval;
             currentMethod = currentClass.Members[methname] as CbMethod;
             sy.Empty();
-            // add secret "this" argument
-            SymTabEntry thisBinding = sy.Binding("this", node[2].LineNumber);
-            thisBinding.Type = currentClass;
-            thisBinding.Kind = CbKind.Constant;
+            // add secret "this" argument if it's not static
+            if (!currentMethod.IsStatic) {
+                SymTabEntry thisBinding = sy.Binding("this", node[2].LineNumber);
+                thisBinding.Type = currentClass;
+                thisBinding.Kind = CbKind.Constant;
+            }
             // add each formal parameter to the symbol table
             AST_kary formals = (AST_kary)node[2];
             for(int i=0; i<formals.NumChildren; i++) {
@@ -484,7 +486,14 @@ public class SemanticCheckVisitor: Visitor {
             bool foundMember = false;
             for (CbClass curr = currentClass; curr != null && !foundMember; curr = curr.Parent) {
                 if (curr.Members.TryGetValue(name,out mem)) {
-                    node.Type = mem.Type;
+                    if (currentMethod != null &&
+                        currentMethod.IsStatic &&
+                        !mem.IsStatic) {
+                            Start.SemanticError(node.LineNumber, "Can't access non-static member in static method");
+                            node.Type = CbType.Error;
+                    } else {
+                        node.Type = mem.Type;
+                    }
 
                     if (mem is CbField) {
                         node.Kind = CbKind.Variable;
