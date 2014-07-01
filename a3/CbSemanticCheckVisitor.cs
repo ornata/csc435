@@ -95,6 +95,61 @@ public class SemanticCheckVisitor: Visitor {
             // get the method's type description
             string methname = ((AST_leaf)(node[1])).Sval;
             currentMethod = currentClass.Members[methname] as CbMethod;
+
+            // check if the method is (erroneously) overloading any base class function
+            // or check if it is correctly overriding a virtual function
+            bool isOverride = currentMethod.IsOverride;
+            bool foundOverride = false;
+            for (CbClass parent = currentClass.Parent; parent != null; parent = parent.Parent) {
+                if (parent.Members.Keys.Contains(methname)) {
+                    CbMethod parentMethod = parent.Members[methname] as CbMethod;
+                    if (parentMethod != null) {
+                        // found a method in a parent with the same name!
+                        // note: can override an "override" or a "virtual" function.
+                        bool overriding = isOverride && (parentMethod.IsOverride || !parentMethod.IsStatic);
+                        if (!overriding) {
+                            Start.SemanticError(
+                                node[1].LineNumber,
+                                "Redefined function in parent without overriding");
+                            break;
+                        } else {
+                            // need to make sure the type signatures match
+                            bool typesMatch = true;
+
+                            if (currentMethod.ResultType != parentMethod.ResultType) {
+                                typesMatch = false;
+                            } else if (currentMethod.ArgType.Count != parentMethod.ArgType.Count) {
+                                typesMatch = false;
+                            } else {
+                                for (int i = 0; i < currentMethod.ArgType.Count; i++) {
+                                    if (currentMethod.ArgType[i] != parentMethod.ArgType[i]) {
+                                        typesMatch = false;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (typesMatch) {
+                                foundOverride = true;
+                            } else {
+                                Start.SemanticError(
+                                    node[1].LineNumber,
+                                    "Types for overridden method don't match.");
+                            }
+                        }
+
+                        // found the method being overridden, so stop.
+                        break;
+                    }
+                }
+            }
+
+            if (isOverride && !foundOverride) {
+                Start.SemanticError(
+                    node[1].LineNumber,
+                    "Method marked override, but does not override.");
+            }
+
             sy.Empty();
             // add secret "this" argument if it's not static
             if (!currentMethod.IsStatic) {

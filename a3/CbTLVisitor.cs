@@ -173,7 +173,10 @@ public class TLVisitor: Visitor {
             // add method name to current class
             AST_leaf mid = (AST_leaf)(node[1]);
             AST attr = node[4];
-            CbMethod mdef = new CbMethod(mid.Sval, attr.Tag==NodeType.Static, null, null);
+            CbMethod mdef = new CbMethod(
+                mid.Sval,
+                attr.Tag == NodeType.Static, attr.Tag == NodeType.Override,
+                null, null);
             if (!c3.AddMember(mdef)) {
                 Start.SemanticError(node[1].LineNumber, "Duplicate method declaration");
             }
