@@ -5,9 +5,15 @@ class Foo {
     public const string hiThere = "hello";
     public const char itsAnX = 'x';
 
+    // shouldn't compile: duplicate const
+    public const int itsAnX = 'b'; 
+
     public int a;
     public string b;
     public char c;
+
+    // should not compile: duplicate field
+    public int c;
 
     public virtual void NotMain() {
         Foo f;
@@ -25,6 +31,10 @@ class Foo {
     }
 
     public static void SomeStaticFun() {
+    }
+
+    // should not compile: not allowed to overload methods in the same class
+    public static void SomeStaticFun(int x) {
     }
 
     public static void Main() {
@@ -188,6 +198,10 @@ class Bar : Foo {
     // should compile (Bar.Ummm overrides Foo.Ummm)
     public override int Ummm( int aa, int bb ) {
         return aa / bb;
+    }
+
+    // should not compile: not allowed to overload methods in base class
+    public virtual void NotMain() {
     }
 }
 

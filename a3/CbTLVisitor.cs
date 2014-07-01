@@ -101,7 +101,9 @@ public class TLVisitor: Visitor {
 
                     // treat the parent as a forward declaration of its class
                     parentTypeDefn = new CbClass(parentName, null);
-                    ns.AddMember(parentTypeDefn);
+                    if (!ns.AddMember(parentTypeDefn)) {
+                        Start.SemanticError(node[0].LineNumber, "Duplicate class definition");
+                    }
                 }
             }
 
@@ -127,7 +129,9 @@ public class TLVisitor: Visitor {
                 // give it a new definition
 
                 classTypeDefn = new CbClass(className, parentTypeDefn);
-                ns.AddMember(classTypeDefn);
+                if (!ns.AddMember(classTypeDefn)) {
+                    Start.SemanticError(node[0].LineNumber, "Duplicate class definition");
+                }
                 if (pendingClassDefns.ContainsKey(className)) {
                     pendingClassDefns.Remove(className);
                 }
@@ -146,7 +150,9 @@ public class TLVisitor: Visitor {
             // add const name to current class
             AST_leaf cid = (AST_leaf)(node[1]);
             CbConst cdef = new CbConst(cid.Sval,null);
-            c1.AddMember(cdef);
+            if (!c1.AddMember(cdef)) {
+                Start.SemanticError(node[1].LineNumber, "Duplicate const declaration");
+            }
             break;
         case NodeType.Field:
             Debug.Assert(data != null && data is CbClass);
@@ -156,7 +162,9 @@ public class TLVisitor: Visitor {
             for(int i=0; i<fields.NumChildren; i++) {
                 AST_leaf id = fields[i] as AST_leaf;
                 CbField fdef = new CbField(id.Sval,null);
-                c2.AddMember(fdef);
+                if (!c2.AddMember(fdef)) {
+                    Start.SemanticError(node[1].LineNumber, "Duplicate field declaration");
+                }
             }
             break;
         case NodeType.Method:
@@ -166,7 +174,9 @@ public class TLVisitor: Visitor {
             AST_leaf mid = (AST_leaf)(node[1]);
             AST attr = node[4];
             CbMethod mdef = new CbMethod(mid.Sval, attr.Tag==NodeType.Static, null, null);
-            c3.AddMember(mdef);
+            if (!c3.AddMember(mdef)) {
+                Start.SemanticError(node[1].LineNumber, "Duplicate method declaration");
+            }
             break;
         default:
             throw new Exception("Unexpected tag: "+node.Tag);
@@ -191,7 +201,9 @@ public class TLVisitor: Visitor {
         }
         foreach(object def in c.Members) {
             Debug.Assert(def is CbClass);
-            currentNS.AddMember((CbClass)def);
+            if (!currentNS.AddMember((CbClass)def)) {
+                Start.SemanticError(ns2open.LineNumber, "Conflicting symbols in namespaces");
+            }
         }
     }
  
