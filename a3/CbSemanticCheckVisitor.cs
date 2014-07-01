@@ -137,6 +137,7 @@ public class SemanticCheckVisitor: Visitor {
             if (!isAssignmentCompatible(node[0].Type, node[1].Type))
                 Start.SemanticError(node.LineNumber, "Invalid types in assignment statement.");
             break;
+
         case NodeType.If:
             node[0].Accept(this,data);
 
@@ -290,9 +291,10 @@ public class SemanticCheckVisitor: Visitor {
             break;
 
         case NodeType.Cast:
-            checkTypeSyntax(node[0]);
+
             node[0].Accept(this,data);
             node[1].Accept(this,data);
+            checkTypeSyntax(node[0]); 
 
             if (!isCastable(node[0].Type, node[1].Type))
                 Start.SemanticError(node[1].LineNumber, "Invalid cast.");
@@ -343,7 +345,7 @@ public class SemanticCheckVisitor: Visitor {
         case NodeType.PlusPlus:
         case NodeType.MinusMinus:
             node[0].Accept(this,data);
-            /* TODO ... check types and operand must be a variable */
+
             if (isIntegerType(node[0].Type) && node[0].Kind == CbKind.Variable) {
                 node.Type = node[0].Type;
             }
@@ -638,11 +640,29 @@ public class SemanticCheckVisitor: Visitor {
            structure for a Cb type. It could be a builtin type (int, char,
            string), a class, or an array whose elements have a valid type.
         */
+
+        if ( !isTypeOrClass(n.Kind) || !isCastableType(n.Type) ) {
+            Start.SemanticError(n.LineNumber, "Cannot cast to any type other than 'int', 'char', 'string', 'array', or 'class'.");
+        }
+    }
+
+    // returns true if the AST node is just a type or class name
+    private bool isTypeOrClass(CbKind k) {
+        return k == CbKind.None || k == CbKind.ClassName; 
+    }
+
+    // returns true if the AST node is an integer, string, array, or class.
+    private bool isCastableType(CbType t) {
+        return t == CbType.Int || t == CbType.Char || t == CbType.String || t is CFArray || t is CbClass;
     }
 
     private bool isCastable(CbType dest, CbType src) {
         if (isIntegerType(dest) && isIntegerType(src)) return true;
         if (dest == CbType.Error || src == CbType.Error) return true;
+
+        // check if only one of them is an integer
+        if (isIntegerType(dest) || isIntegerType(src)) return false;
+
         CbClass d = dest as CbClass;
         CbClass s = src as CbClass;
         if (isAncestor(d,s)) return true;

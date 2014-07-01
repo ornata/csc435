@@ -69,6 +69,10 @@ class Foo {
             x = 2;
         }
 
+        char ch;
+        ch = (char)x; // should work
+        ch = (y)x; // shouldn't work
+
         if(x < y && x > 2) {
             str = "goodbye";
         }
@@ -161,6 +165,17 @@ class Bar : Foo {
     // should not compile: Bar.Umm does not override Foo.Ummm
     public override int Umm( int aa, int bb ) {
         System.Console.WriteLine("This is Bar");
+
+        char ch;
+        int x;
+        x = 5;
+        ch = (Foo) x;
+
+        Foo foo;
+        foo = (Foo) this; // should work
+        Bar bar;
+        bar = (Bar) foo; // should work
+        bar = (bar) bar; // shouldn't work
 
         return a-b; // should error (a,b are inherited, but a is int and b is string)
         return a-c; // should not error (a,b are inherited. a is int, c is char)
