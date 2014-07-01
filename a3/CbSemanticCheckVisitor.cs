@@ -143,11 +143,19 @@ public class SemanticCheckVisitor: Visitor {
             break;
         case NodeType.While:
             node[0].Accept(this,data);
-            /* TODO ... check type */
+
+            if (node[0].Type != CbType.Bool) {
+                Start.SemanticError(node[0].LineNumber, "While loop test condition must be boolean.");
+                node.Type = CbType.Error;
+            }
+
             loopNesting++;
             node[1].Accept(this,data);
+
             loopNesting--;
+
             break;
+
         case NodeType.Return:
             CbType typeToReturn = null;
             if (node[0] != null) {
@@ -237,13 +245,16 @@ public class SemanticCheckVisitor: Visitor {
             Start.SemanticError(node[1].LineNumber, "Member {0} does not exist.", rhs);
             node.Type = CbType.Error;
             break;
+
         case NodeType.Cast:
             checkTypeSyntax(node[0]);
             node[0].Accept(this,data);
             node[1].Accept(this,data);
+
             if (!isCastable(node[0].Type, node[1].Type))
                 Start.SemanticError(node[1].LineNumber, "Invalid cast.");
             node.Type = node[0].Type;
+
             break;
 
         case NodeType.NewArray:

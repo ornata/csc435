@@ -70,6 +70,14 @@ class Foo {
         this = this; // should not compile
         this = f; // should not compile
 
+        while (x < 10) { // should compile
+            x++;
+        }
+
+        while (str) { // shouldn't compile
+            x++;
+        }
+
         int L;
         L = "hello".Length;
 
