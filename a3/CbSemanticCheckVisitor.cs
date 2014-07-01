@@ -184,12 +184,43 @@ public class SemanticCheckVisitor: Visitor {
         case NodeType.Call:
             node[0].Accept(this,data); // method name (could be a dotted expression)
             node[1].Accept(this,data); // actual parameters
-            /* TODO ... check types */
-            node.Type = CbType.Error;  // FIX THIS
+            
+            if (!(node[0].Type is CbMethodType)) {
+                Start.SemanticError(node[0].LineNumber, "Calls must be made on methods.");
+                node.Type = CbType.Error;
+            } else {
+                CbMethodType methodT = node[0].Type as CbMethodType;
+                CbMethod method = methodT.Method;
+
+                AST_kary actualAST = node[1] as AST_kary;
+
+                if (actualAST.NumChildren != method.ArgType.Count) {
+                    Start.SemanticError(node[1].LineNumber, "Incorrect number of arguments to method call."); 
+                    node.Type = CbType.Error;
+                } else {
+                    bool foundTypeError = false;
+
+                    for (int i = 0; i < actualAST.NumChildren && !foundTypeError; i++) {
+                        if (!isAssignmentCompatible(method.ArgType[i], actualAST[i].Type)) {
+                            foundTypeError = true;
+                        }
+                    }
+
+                    if (foundTypeError) {
+                        Start.SemanticError(node[1].LineNumber, "Incompatible argument types in method call.");
+                        node.Type = CbType.Error;
+                    } else {
+                        node.Type = method.ResultType;
+                    }
+                }
+            }
+
             break;
         case NodeType.Dot:
             node[0].Accept(this,data);
             string rhs = ((AST_leaf)node[1]).Sval;
+
+            // check if we're accessing a class
             CbClass lhstype = node[0].Type as CbClass;
             if (lhstype != null) {
                 // rhs needs to be a member of the lhs class
@@ -233,6 +264,8 @@ public class SemanticCheckVisitor: Visitor {
                 }
                 break;
             }
+
+            // check if we're accessing a namespace
             CbNameSpaceContext lhsns = node[0].Type as CbNameSpaceContext;
             if (lhsns != null) {
                 lhstype = lhsns.Space.LookUp(rhs) as CbClass;
@@ -242,6 +275,7 @@ public class SemanticCheckVisitor: Visitor {
                     break;
                 }
             }
+            // couldn't find it
             Start.SemanticError(node[1].LineNumber, "Member {0} does not exist.", rhs);
             node.Type = CbType.Error;
             break;
@@ -465,30 +499,50 @@ public class SemanticCheckVisitor: Visitor {
         switch(node.Tag) {
         case NodeType.Ident:
             string name = node.Sval;
+
+            // look through local declarations
             SymTabEntry local = sy.LookUp(name);
             if (local != null) {
                 node.Type = local.Type;
                 node.Kind = local.Kind;
-                return;
-            }
-            CbMember mem;
-            if (currentClass.Members.TryGetValue(name,out mem)) {
-                node.Type = mem.Type;
-                if (mem is CbField)
-                    node.Kind = CbKind.Variable;
                 break;
             }
+
+            // look through this class and all its parents
+            CbMember mem;
+            bool foundMember = false;
+            for (CbClass curr = currentClass; curr != null && !foundMember; curr = curr.Parent) {
+                if (curr.Members.TryGetValue(name,out mem)) {
+                    node.Type = mem.Type;
+
+                    if (mem is CbField) {
+                        node.Kind = CbKind.Variable;
+                    }
+
+                    foundMember = true;
+                }
+            }
+
+            if (foundMember) {
+                break;
+            }
+
+            // look through the top-level namespace for a class
             CbClass t = ns.LookUp(name) as CbClass;
             if (t != null) {
                 node.Type = t;
                 node.Kind = CbKind.ClassName;
                 break;
             }
+
+            // look through the top-level namespace for a namespace
             NameSpace lhsns = ns.LookUp(name) as NameSpace;
             if (lhsns != null) {
                 node.Type = new CbNameSpaceContext(lhsns);
                 break;
             }
+
+            // couldn't find identifier
             node.Type = CbType.Error;
             Start.SemanticError(node.LineNumber, "{0} is unknown", name);
             break;
@@ -536,6 +590,8 @@ public class SemanticCheckVisitor: Visitor {
 
             if (classes.Contains(curr.Parent)) {
                 Start.SemanticError(lineNumber, "cyclic dependency in class hierarchy for " + c.Name);
+                // attempt to recover from the error by cutting the cycle
+                curr.Parent = CbType.Object;
                 return;
             }
 

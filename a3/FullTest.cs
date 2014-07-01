@@ -9,17 +9,38 @@ class Foo {
     public string b;
     public char c;
 
+    public virtual void NotMain() {
+        Foo f;
+        f = this; // should compile
+
+        // this is immutable.
+        this = this; // should not compile
+        this = f; // should not compile
+
+        Bar b;
+        b = this; // should not compile (type mismatch, needs downcast)
+    }
+
+    public static void SomeStaticFun() {
+    }
+
     public static void Main() {
+        SomeStaticFun(); // should compile
+
         Foo f;
         f = null;
-        f = this;
+        f = this; // should not compile (this used in static)
         f = new Bar();
         int r;
         r = null; // should not compile
-        r = f.Umm(3,4);
+        r = a; // should not compile (a is static)
 
-        Bar b;
-        b = this; // should not compile
+        r = f.Umm(3,4); // should not compile (Foo has no Umm method)
+        r = f.Ummm(3,4); // should compile
+        r = f.Ummm(34); // should not compile (wrong number of arguments)
+        r = f.Ummm("asdf",4); // should not compile (wrong types for arguments)
+        f.SomeStaticFun(); // should not compile (static function called as a member)
+        Foo.SomeStaticFun(); // should compile
 
         string s;
         s = null; // should not compile
@@ -66,9 +87,6 @@ class Foo {
         str++; // shouldn't work
 
         y = new System(); // should not compile
-
-        this = this; // should not compile
-        this = f; // should not compile
 
         while (x < 10) { // should compile
             x++;
@@ -136,9 +154,21 @@ class Foo {
 class Bar : Foo {
     public int x;
 
+    // should not compile: Bar.Umm does not override Foo.Ummm
     public override int Umm( int aa, int bb ) {
         System.Console.WriteLine("This is Bar");
-        return a-b;
+
+        return a-b; // should error (a,b are inherited, but a is int and b is string)
+        return a-c; // should not error (a,b are inherited. a is int, c is char)
+
+        return c; // should not error (c is inherited)
+
+        return aa * bb; // should not error (both are locals)
+    }
+
+    // should compile (Bar.Ummm overrides Foo.Ummm)
+    public override int Ummm( int aa, int bb ) {
+        return aa / bb;
     }
 }
 
