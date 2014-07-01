@@ -2,4 +2,4 @@ Team members:
 Jessica Paquette
 Nicolas Guillemot
 
-The supplied FullTest.cs is our test case for catching errors.
+The supplied FullTest.cb is our test case for catching errors.

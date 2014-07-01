@@ -35,7 +35,7 @@ CbParser.cs: CbParser.y
 cbc.exe:  $(SOURCES)
 	$(CSC) -debug $^
 
-submission.zip: $(SOURCES_NOGEN) CbLexer.lex CbParser.y README.txt FullTest.cs
+submission.zip: $(SOURCES_NOGEN) CbLexer.lex CbParser.y README.txt FullTest.cb
 	zip submission $^
 
 ExampleTest: cbc.exe CbExample.cs
@@ -44,8 +44,8 @@ ExampleTest: cbc.exe CbExample.cs
 ExampleTestSolution: cbc.exe CbExample.cs
 	$(MONO) --debug cbc-sample-solution.exe -ns -tc CbExample.cs
 
-FullTest: cbc.exe FullTest.cs
-	$(MONO) --debug cbc.exe -ns -tc FullTest.cs
+FullTest: cbc.exe FullTest.cb
+	$(MONO) --debug cbc.exe -ns -tc FullTest.cb
 
-FullTestSolution: cbc.exe FullTest.cs
-	$(MONO) --debug cbc-sample-solution.exe -ns -tc FullTest.cs
+FullTestSolution: cbc.exe FullTest.cb
+	$(MONO) --debug cbc-sample-solution.exe -ns -tc FullTest.cb
