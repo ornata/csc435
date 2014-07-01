@@ -137,15 +137,22 @@ public class SemanticCheckVisitor: Visitor {
             break;
         case NodeType.If:
             node[0].Accept(this,data);
-            /* TODO ... check type */
+
+            if (node[0].Type != CbType.Bool) {
+                Start.SemanticError(node[0].LineNumber, "'if' statement test condition must be boolean.");
+                node.Type = CbType.Error;
+            }
+
             node[1].Accept(this,data);
             node[2].Accept(this,data);
+
             break;
+
         case NodeType.While:
             node[0].Accept(this,data);
 
             if (node[0].Type != CbType.Bool) {
-                Start.SemanticError(node[0].LineNumber, "While loop test condition must be boolean.");
+                Start.SemanticError(node[0].LineNumber, "'while' loop test condition must be boolean.");
                 node.Type = CbType.Error;
             }
 
