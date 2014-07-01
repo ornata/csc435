@@ -259,24 +259,56 @@ public class SemanticCheckVisitor: Visitor {
 
                 AST_kary actualAST = node[1] as AST_kary;
 
-                if (actualAST.NumChildren != method.ArgType.Count) {
-                    Start.SemanticError(node[1].LineNumber, "Incorrect number of arguments to method call."); 
-                    node.Type = CbType.Error;
-                } else {
-                    bool foundTypeError = false;
+                bool numArgsIncorrect = false;
+                bool argTypesIncorrect = false;
 
-                    for (int i = 0; i < actualAST.NumChildren && !foundTypeError; i++) {
-                        if (!isAssignmentCompatible(method.ArgType[i], actualAST[i].Type)) {
-                            foundTypeError = true;
+                if (method.Owner == CbType.String && method.Name == "Substring") {
+                    // special case: System.String.Substring
+                    if (actualAST.NumChildren < 1 || actualAST.NumChildren > 2) {
+
+                        numArgsIncorrect = true;
+                    } else {
+                        for (int i = 0; i < actualAST.NumChildren; i++) {
+                            if (!isIntegerType(actualAST[i].Type)) {
+                                argTypesIncorrect = true;
+                                break;
+                            }
                         }
                     }
-
-                    if (foundTypeError) {
-                        Start.SemanticError(node[1].LineNumber, "Incompatible argument types in method call.");
-                        node.Type = CbType.Error;
+                }
+                else if (method.Owner == (ns.LookUp("System") as NameSpace).LookUp("Console") &&
+                         (method.Name == "Write" || method.Name == "WriteLine")) {
+                    // special case: System.Console.WriteLine or Write
+                    if (actualAST.NumChildren != 1) {
+                        numArgsIncorrect =  true;
                     } else {
-                        node.Type = method.ResultType;
+                        if (actualAST[0].Type != CbType.Int &&
+                            actualAST[0].Type != CbType.Char &&
+                            actualAST[0].Type != CbType.String) {
+                            argTypesIncorrect = true;
+                        }
                     }
+                } else {
+                    // default case (not a special function)
+                    if (actualAST.NumChildren != method.ArgType.Count) {
+                        numArgsIncorrect = true;
+                    } else {
+                        for (int i = 0; i < actualAST.NumChildren; i++) {
+                            if (!isAssignmentCompatible(method.ArgType[i], actualAST[i].Type)) {
+                                argTypesIncorrect = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                node.Type = CbType.Error;
+                if (numArgsIncorrect) {
+                    Start.SemanticError(node[1].LineNumber, "Incorrect number of arguments to method call."); 
+                } else if (argTypesIncorrect) {
+                    Start.SemanticError(node[1].LineNumber, "Incompatible argument types in method call.");
+                } else {
+                    node.Type = method.ResultType;
                 }
             }
 

@@ -128,6 +128,18 @@ class Foo {
         // should not be able to assign to string length
         hiThere.Length = 3; // should error
 
+        Console.WriteLine(hiThere); // should not error
+        Console.WriteLine(5); // should not error
+        Console.WriteLine('a'); // should not error
+        Console.WriteLine(f); // should error
+
+        hiThere.Substring(0); // should not error
+        hiThere.Substring(1,2); // should not error
+        hiThere.Substring(); // should error
+        hiThere.Substring(1,2,3); // should error
+        hiThere.Substring(f); // should error
+        hiThere.Substring("foo","bar"); // should error
+
         int[] arr;
         arr = new int[25];
         L = arr.Length;
