@@ -35,7 +35,7 @@ CbParser.cs: CbParser.y
 cbc.exe:  $(SOURCES)
 	$(CSC) -debug $^
 
-submission.zip: $(SOURCES_NOGEN) CbLexer.lex CbParser.y README.txt
+submission.zip: $(SOURCES_NOGEN) CbLexer.lex CbParser.y README.txt FullTest.cs
 	zip submission $^
 
 ExampleTest: cbc.exe CbExample.cs
