@@ -1,0 +1,9 @@
+Corrections
+===========
+
+1. In file LLVM.cs, the line
+     Debug.Assert(suspensionCnt==0);
+   should be deleted or commented out. (Line # 79.)
+   [Corrected: 13:55, 14 July.]
+
+
