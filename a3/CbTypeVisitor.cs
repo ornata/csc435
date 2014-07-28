@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 public class TypeVisitor : Visitor {
     private NameSpace CurrentNameSpace;
+    private int mainCount = 0;
 
     public TypeVisitor(NameSpace currentNameSpace) {
         CurrentNameSpace = currentNameSpace;
@@ -14,6 +15,12 @@ public class TypeVisitor : Visitor {
         for (int i = 0; i < node.NumChildren; i++) {
             if (node[i] != null) {
                 node[i].Accept(this, data);
+            }
+        }
+
+        if (node.Tag == NodeType.ClassList) {
+            if (mainCount == 0) {
+                Start.SemanticError(node.LineNumber, "Program is missing a static void Main() function.");
             }
         }
     }
@@ -34,10 +41,10 @@ public class TypeVisitor : Visitor {
             string name = (node[1] as AST_leaf).Sval;
 
             CbConst conzt = clazz.Members[name] as CbConst;
-
             // get the type of the const
             if (node[0] == null) {
                 conzt.Type = CbType.Void;
+                Start.SemanticError(node.LineNumber, "Consts can't have a void type.");
             } else {
                 node[0].Accept(this, clazz);
                 conzt.Type = node[0].Type;
@@ -50,6 +57,7 @@ public class TypeVisitor : Visitor {
             CbType fieldType;
             if (node[0] == null) {
                 fieldType = CbType.Void;
+                Start.SemanticError(node.LineNumber, "Fields can't have a void type.");
             } else {
                 node[0].Accept(this, clazz);
                 fieldType = node[0].Type;
@@ -87,6 +95,13 @@ public class TypeVisitor : Visitor {
                 formalTypes.Add(node[2][i].Type);
             }
             method.ArgType = formalTypes;
+
+            if (method.Name == "Main" &&
+                method.IsStatic &&
+                method.ResultType == CbType.Void &&
+                method.ArgType.Count == 0) {
+                mainCount++;
+            }
         }
         else if (node.Tag == NodeType.Array) {
             CbType elemType;
@@ -96,6 +111,13 @@ public class TypeVisitor : Visitor {
                 node[0].Accept(this, data);
                 node.Type = CbType.Array(node[0].Type);
             }
+        }
+        else if (node.Tag == NodeType.Formal) {
+            // visit the type of the formal
+            node[0].Accept(this, data);
+
+            // steal its type
+            node.Type = node[0].Type;
         }
         else
         {

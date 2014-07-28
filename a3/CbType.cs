@@ -67,30 +67,31 @@ public abstract class CbType {
         
         // Provide String class with String.Substring and String.Length members
         CbClass st = CbType.String;
-        CbMethod sub = new CbMethod("Substring", false, st, new List<CbType> { CbType.Int, CbType.Int });
+        CbMethod sub = new CbMethod("Substring", false, false, st, new List<CbType> { CbType.Int, CbType.Int });
         st.AddMember(sub);
         CbField len = new CbField("Length", CbType.Int);
         st.AddMember(len);
         system.AddMember(st);
 
         CbClass con = new CbClass("Console", null);
-        con.AddMember(new CbMethod("WriteLine", true, CbType.Void, new List<CbType> { CbType.Object }));
-        con.AddMember(new CbMethod("Write", true, CbType.Void, new List<CbType> { CbType.Object }));
-        con.AddMember(new CbMethod("ReadLine", true, CbType.String, new List<CbType> { }));
+        con.AddMember(new CbMethod("WriteLine", true, false, CbType.Void, new List<CbType> { CbType.Object }));
+        con.AddMember(new CbMethod("Write", true, false, CbType.Void, new List<CbType> { CbType.Object }));
+        con.AddMember(new CbMethod("ReadLine", true, false, CbType.String, new List<CbType> { }));
         system.AddMember(con);
         
         CbClass i32 = new CbClass("Int32", null);
-        i32.AddMember(new CbMethod("Parse", true, CbType.Int, new List<CbType> {st}));
+        i32.AddMember(new CbMethod("Parse", true, false, CbType.Int, new List<CbType> {st}));
         system.AddMember(i32);
     }
 }
 
-public class CFArray: CbType {
+public class CFArray: CbClass {
     public CbType ElementType{ get; set; }
 
     // Do not call directly -- use CbType.Array(elt) instead
-    public CFArray( CbType elt ) {
+    public CFArray( CbType elt ) : base("_Array", null) {
         ElementType = elt;
+        AddMember(new CbField("Length", CbType.Int));
     }
 
     public override string ToString() {
@@ -252,9 +253,11 @@ public class CbMethod: CbMember {
     public override CbType Type{
         get { return new CbMethodType(this); }
         set { throw new Exception("internal error"); } }
+    public bool IsOverride{ get; set; }
 
-    public CbMethod( string nm, bool isStatic, CbType rt, IList<CbType> argType ) {
+    public CbMethod( string nm, bool isStatic, bool isOverride, CbType rt, IList<CbType> argType ) {
        Name = nm;  IsStatic = isStatic;
+       IsOverride = isOverride;
        ResultType = rt; ArgType = argType;
     }
 

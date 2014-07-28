@@ -13,7 +13,7 @@ GPLEX = ../gplex-distro-1.2.1/binaries/gplex.exe
 # sources without generated files
 SOURCES_NOGEN = cbc.cs CbSymTab.cs CbTLVisitor.cs CbType.cs CbTopLevel.cs \
 CbVisitor.cs CbPrVisitor.cs CbAST.cs ShiftReduceParser.cs CbTypeVisitor.cs \
-CbTypeCheckVisitor.cs
+CbSemanticCheckVisitor.cs
 
 # generated source files
 SOURCES_GEN = CbLexer.cs CbParser.cs
@@ -35,8 +35,17 @@ CbParser.cs: CbParser.y
 cbc.exe:  $(SOURCES)
 	$(CSC) -debug $^
 
-submission.zip: $(SOURCES_NOGEN) CbLexer.lex CbParser.y README.txt
+submission.zip: $(SOURCES_NOGEN) CbLexer.lex CbParser.y README.txt FullTest.cb
 	zip submission $^
 
-test: cbc.exe CbExample.cs
-	$(MONO) --debug cbc.exe -ns CbExample.cs
+ExampleTest: cbc.exe CbExample.cs
+	$(MONO) --debug cbc.exe -ns -tc CbExample.cs
+
+ExampleTestSolution: cbc.exe CbExample.cs
+	$(MONO) --debug cbc-sample-solution.exe -ns -tc CbExample.cs
+
+FullTest: cbc.exe FullTest.cb
+	$(MONO) --debug cbc.exe -ns -tc FullTest.cb
+
+FullTestSolution: cbc.exe FullTest.cb
+	$(MONO) --debug cbc-sample-solution.exe -ns -tc FullTest.cb

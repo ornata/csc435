@@ -29,6 +29,7 @@ namespace FrontEnd {
 public class SymTabEntry {
     public int DeclLineNo { get; private set; }  // declared on this line
     public CbType Type{ get; set; }              // declared type
+    public CbKind Kind{ get; set; }
 
     public string Name{ get; private set; }
 
