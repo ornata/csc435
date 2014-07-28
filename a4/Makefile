@@ -29,7 +29,7 @@ SOURCES = $(SOURCES_NOGEN) $(SOURCES_GEN)
 all: cbc.exe submission.zip
 
 clean:
-	rm -f submission.zip Fibs *.exe $(SOURCES_GEN) CbParser.conflicts *.mdb
+	rm -f submission.zip Fibs *.exe $(SOURCES_GEN) CbParser.conflicts *.mdb *.ll *.s
 
 CbLexer.cs: CbLexer.lex
 	$(MONO) $(GPLEX) $^
