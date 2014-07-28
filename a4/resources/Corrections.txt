@@ -1,0 +1,52 @@
+Corrections
+===========
+
+1. In file LLVM.cs, the line
+     Debug.Assert(suspensionCnt==0);
+   should be deleted or commented out. (Line # 79.)
+   [Corrected: 13:55, 14 July.]
+
+2. In file CbTypeCheckVisitor2.cs, the case for the Index tag
+   needs to include the assignment
+         node.Kind = CbKind.Variable;
+   Inserting this just before the break at line 305 is OK.
+   [Corrected: 15 July.]
+
+3. Several corrections/improvements have been made to these files:
+      LLVMVisitor2.cs
+      LLVM-Definitions.cs
+      LLVM-WriteMethods.cs
+      LLVM.cs
+      CbTypeCheckVisitor2.cs
+      cbc.cs
+   and there is one new source code file named:
+      LLVM-Arrays.cs
+   The improvements are to provide support for arrays in Cb. The
+   methods which generate LLVM code for array access are provided
+   in the new file.
+   The corrections fix issues involving
+      use of an implicit this pointer when calling a method in same class
+      accessing fields in the current instance (with implicit this pointer)
+      LLVM code not quite correct for a 64 bit processor
+
+   Note: a test program 'ArrayTestingWithFibs.cs' has been provided to
+   demonstrate array access working.
+
+4. In file LLVM-UtilityMethods.cs, line 125 in the WriteIntInst method
+   should be
+    	case NodeType.Div: op = "sdiv"; break;
+
+5. There was a very subtle bug in the yyerror method of CbLexer.lex.
+   If a syntax error message contains the characters '{' or '}', then
+   the String.Format method complains because it expects curly braces
+   to enclose positional format items. The new version of CbLexer.lex
+   fixes that problem.
+
+6. The CbTypeCheckVisitor2.cs file was missing code to handle local
+   declarations of arrays. This is now fixed (see the Array case in
+   the Visit for non_leaf nodes). In addition, a few improvements have
+   been included:
+   * check for use of break inside a loop,
+   * check that a cast uses the correct syntax,
+   * check that with a cast of the form  (id)Exp  the identifier id is
+     actually the name of a class.
