@@ -66,7 +66,7 @@ public class LLVMVisitor2: Visitor {
     }
 
 
-	public override void Visit(AST_kary node, object data) {
+    public override void Visit(AST_kary node, object data) {
         switch(node.Tag) {
         case NodeType.ClassList:
             // visit each class declared in the program
@@ -98,8 +98,8 @@ public class LLVMVisitor2: Visitor {
         }
     }
 
-	public override void Visit( AST_nonleaf node, object data ) {
-	    LLVMValue savedValue;
+    public override void Visit( AST_nonleaf node, object data ) {
+        LLVMValue savedValue;
         switch(node.Tag) {
         case NodeType.Program:
             llvm.OutputArrayDefinitions();  // NEW!
@@ -261,12 +261,12 @@ public class LLVMVisitor2: Visitor {
                 if (m.Method.IsStatic)
                     lastValueLocation = llvm.CallStaticMethod(m.Method, actuals);
                 else {
-                	if (savedValue == null) {
-                	    if (currentMethod.IsStatic)
-                	        Start.SemanticError(node.LineNumber,
-                	            "Cannot call virtual method without an object reference");
-                		savedValue = thisPointer;
-                	}
+                    if (savedValue == null) {
+                        if (currentMethod.IsStatic)
+                            Start.SemanticError(node.LineNumber,
+                                "Cannot call virtual method without an object reference");
+                        savedValue = thisPointer;
+                    }
                     lastValueLocation = llvm.CallVirtualMethod(m.Method, savedValue, actuals);
                 }
             }
@@ -329,7 +329,12 @@ public class LLVMVisitor2: Visitor {
             break;
         case NodeType.UnaryMinus:
             node[0].Accept(this,data);
-            // TODO
+            lastValueLocation = llvm.ForceIntValue(lastValueLocation);
+            lastValueLocation = 
+                llvm.WriteIntInst(
+                    NodeType.Sub, 
+                    new LLVMValue("i8", "0", false),
+                    lastValueLocation);
             break;
         case NodeType.Index:
             node[0].Accept(this,data);
@@ -338,7 +343,7 @@ public class LLVMVisitor2: Visitor {
             lastValueLocation = llvm.ForceIntValue(lastValueLocation);
             // TODO  -- done!
             lastValueLocation = llvm.ElementReference(node.Type,
-				savedValue, lastValueLocation);
+                savedValue, lastValueLocation);
             break;
         case NodeType.Add:
         case NodeType.Sub:
@@ -375,8 +380,8 @@ public class LLVMVisitor2: Visitor {
         }
     }
 
-	public override void Visit(AST_leaf node, object data) {
-	    switch(node.Tag) {
+    public override void Visit(AST_leaf node, object data) {
+        switch(node.Tag) {
         case NodeType.IntConst:
         case NodeType.CharConst:
             lastValueLocation = llvm.GetIntVal(node);

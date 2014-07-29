@@ -40,7 +40,17 @@ class Fibs {
         Print(0);
     }
 
+    public static void UnaryMinusTest(int x) {
+        Console.Write("Should be -");
+		Console.Write(x);
+		Console.Write(": ");
+        x = -x;
+        Console.WriteLine(x);
+    }
+
     public static void Main() {
+        UnaryMinusTest(3);
+
         Fibs f;
         f = new Fibs();
         f.Run();
