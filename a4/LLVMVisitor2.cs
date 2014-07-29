@@ -158,7 +158,7 @@ public class LLVMVisitor2: Visitor {
                 en.SSAName = "%" + local.Sval;
             }
             break;
-        case NodeType.Assign:
+        case NodeType.Assign: {
             node[0].Accept(this,data);
             savedValue = lastValueLocation;
             SymTabEntry savedDest = lastLocalVariable;
@@ -173,7 +173,7 @@ public class LLVMVisitor2: Visitor {
                 lastLocalVariable = null;
             }
             lastValueLocation = null;
-            break;
+            } break;
         case NodeType.If:
             string TL = llvm.CreateBBLabel("iftrue");
             string FL = llvm.CreateBBLabel("ifelse");
@@ -319,17 +319,28 @@ public class LLVMVisitor2: Visitor {
             lastValueLocation = llvm.NewClassInstance((CbClass)(node[0].Type));
             break;
         case NodeType.PlusPlus:
-        case NodeType.MinusMinus:
+        case NodeType.MinusMinus: {
             node[0].Accept(this,data);
-            // TODO 
+            SymTabEntry savedDest = lastLocalVariable;
+
+            lastValueLocation = llvm.ForceIntValue(lastValueLocation);
+            lastValueLocation = 
+                llvm.WriteIntInst(
+                    node.Tag == NodeType.PlusPlus ? NodeType.Add : NodeType.Sub,
+                    lastValueLocation,
+                    new LLVMValue("i8", "1", false));
+
+            savedDest.SSAName = lastValueLocation.LLValue;
+            lastLocalVariable = null;
             lastValueLocation = null;
-            break;
+            } break;
         case NodeType.UnaryPlus:
             // a no-op
             break;
         case NodeType.UnaryMinus:
             node[0].Accept(this,data);
             lastValueLocation = llvm.ForceIntValue(lastValueLocation);
+
             lastValueLocation = 
                 llvm.WriteIntInst(
                     NodeType.Sub, 

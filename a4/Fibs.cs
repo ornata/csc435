@@ -48,8 +48,21 @@ class Fibs {
         Console.WriteLine(x);
     }
 
+	public static void PlusPlusMinusMinusTest(int x) {
+		Console.Write("x: ");
+		Console.WriteLine(x);
+		Console.Write("x++: ");
+		x++;
+		Console.WriteLine(x);
+		Console.Write("x--: ");
+		x--;
+		x--;
+		Console.WriteLine(x);
+	}
+
     public static void Main() {
         UnaryMinusTest(3);
+		PlusPlusMinusMinusTest(3);
 
         Fibs f;
         f = new Fibs();
