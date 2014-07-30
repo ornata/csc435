@@ -42,27 +42,62 @@ class Fibs {
 
     public static void UnaryMinusTest(int x) {
         Console.Write("Should be -");
-		Console.Write(x);
-		Console.Write(": ");
+        Console.Write(x);
+        Console.Write(": ");
         x = -x;
         Console.WriteLine(x);
     }
 
-	public static void PlusPlusMinusMinusTest(int x) {
-		Console.Write("x: ");
-		Console.WriteLine(x);
-		Console.Write("x++: ");
-		x++;
-		Console.WriteLine(x);
-		Console.Write("x--: ");
-		x--;
-		x--;
-		Console.WriteLine(x);
-	}
+    public static void PlusPlusMinusMinusTest(int x) {
+        Console.Write("x: ");
+        Console.WriteLine(x);
+        Console.Write("x++: ");
+        x++;
+        Console.WriteLine(x);
+        Console.Write("x--: ");
+        x--;
+        x--;
+        Console.WriteLine(x);
+    }
+
+    public static void AndAndOrOrTest(int t, int f) {
+        if (t && t) {
+            Console.WriteLine("t && t Should print");
+        }
+
+        if (t && f) {
+            Console.WriteLine("t && f Should not print"); 
+        }
+        
+        if (f && t) {
+            Console.WriteLine("f && t Should not print"); 
+        }
+
+        if (f && f) {
+            Console.WriteLine("f && f Should not print"); 
+        }
+
+        if (t || t) {
+            Console.WriteLine("t || t Should print");
+        }
+
+        if (t || f) {
+            Console.WriteLine("t || f Should print"); 
+        }
+        
+        if (f || t) {
+            Console.WriteLine("f || t Should print"); 
+        }
+
+        if (f || f) {
+            Console.WriteLine("f || f Should not print"); 
+        }
+    }
 
     public static void Main() {
         UnaryMinusTest(3);
-		PlusPlusMinusMinusTest(3);
+        PlusPlusMinusMinusTest(3);
+		AndAndOrOrTest(1,0);
 
         Fibs f;
         f = new Fibs();

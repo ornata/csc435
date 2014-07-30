@@ -201,11 +201,16 @@ namespace FrontEnd
             return result;  
         }
 
-        public void AllocLocalVar( string name, CbType type ) {
+        public LLVMValue AllocTempVar( CbType type ) {
+            string name = nextTemporary();
+
             int align = 4;
             if (type == CbType.Char) align = 1;
-            ll.WriteLine("  %{0}.addr = alloca {1}, align {2}",
+
+            ll.WriteLine("  {0} = alloca {1}, align {2}",
                 name, GetTypeDescr(type), align);
+
+            return new LLVMValue(GetTypeDescr(type), name, true);
         }
         
         // Returns the name of the LLVM temporary being used for a
@@ -246,6 +251,10 @@ namespace FrontEnd
             if (srcType == destType)
                 return src;
             string rv = nextTemporary();
+            if (destType == CbType.Bool) {
+                ll.WriteLine("  {0} = icmp ne {1}, 0", rv, src);
+                return new LLVMValue("i1", rv, false);
+            }
             if (destType == CbType.Int) {
                 // widen from char to int
                 ll.WriteLine("  {0} = zext {1} to i32", rv, src);

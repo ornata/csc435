@@ -105,7 +105,7 @@ public class LLVMVisitor2: Visitor {
             llvm.OutputArrayDefinitions();  // NEW!
             node[1].Accept(this, data);  // visit class declarations
             break;
-        case NodeType.Class:
+        case NodeType.Class: {
             string className = ((AST_leaf)node[0]).Sval;
             currentClass = ns.LookUp(className) as CbClass;
             thisPointer = llvm.CreateThisPointer(currentClass);
@@ -116,14 +116,14 @@ public class LLVMVisitor2: Visitor {
             }
             currentClass = null;
             thisPointer = null;
-            break;
+            } break;
         case NodeType.Const:
             // already processed in first LLVM pass
             break;
         case NodeType.Field:
             // instance fields are handled by the visit to NodeType.Class
             break;
-        case NodeType.Method:
+        case NodeType.Method: {
             // get the method's type description
             string methname = ((AST_leaf)(node[1])).Sval;
             currentMethod = currentClass.Members[methname] as CbMethod;
@@ -148,8 +148,8 @@ public class LLVMVisitor2: Visitor {
             llvm.WriteMethodEnd(currentMethod);
             currentMethod = null;
             lastBBLabel = null;
-            break;
-        case NodeType.LocalDecl:
+            } break;
+        case NodeType.LocalDecl: {
             AST_kary locals = node[1] as AST_kary;
             for(int i=0; i<locals.NumChildren; i++) {
                 AST_leaf local = locals[i] as AST_leaf;
@@ -157,7 +157,7 @@ public class LLVMVisitor2: Visitor {
                 en.Type = node[0].Type;
                 en.SSAName = "%" + local.Sval;
             }
-            break;
+            } break;
         case NodeType.Assign: {
             node[0].Accept(this,data);
             savedValue = lastValueLocation;
@@ -174,7 +174,7 @@ public class LLVMVisitor2: Visitor {
             }
             lastValueLocation = null;
             } break;
-        case NodeType.If:
+        case NodeType.If: {
             string TL = llvm.CreateBBLabel("iftrue");
             string FL = llvm.CreateBBLabel("ifelse");
             string JL = llvm.CreateBBLabel("ifend");
@@ -202,7 +202,7 @@ public class LLVMVisitor2: Visitor {
             llvm.WriteLabel(JL);
             lastBBLabel = JL;
             sy = llvm.Join(thenEnd, sySaved, elseEnd, sy);
-            break;
+            } break;
         case NodeType.While:
             /*  TODO
             node[0].Accept(this,data);
@@ -271,7 +271,7 @@ public class LLVMVisitor2: Visitor {
                 }
             }
             break;
-        case NodeType.Dot:
+        case NodeType.Dot: {
             node[0].Accept(this,data);
             string rhs = ((AST_leaf)node[1]).Sval;
             if (node.Kind == CbKind.Variable) {
@@ -289,8 +289,7 @@ public class LLVMVisitor2: Visitor {
                     }
                     lhstype = lhstype.Parent;
                 }
-            } else
-            if (node.Kind == CbKind.ClassName) {
+            } else if (node.Kind == CbKind.ClassName) {
                 // do nothing
             } else if (node[0].Type is CFArray && rhs == "Length") {
                 lastValueLocation = llvm.ArrayLength(node.Type, lastValueLocation);  // ADDED
@@ -305,7 +304,7 @@ public class LLVMVisitor2: Visitor {
                 // else
                 //    lastValueLocation = null;  // it was a method, do nothing
             }
-            break;
+            } break;
         case NodeType.Cast:
             node[1].Accept(this,data);
             lastValueLocation = llvm.Coerce(lastValueLocation, node[1].Type, node.Type);
@@ -380,12 +379,36 @@ public class LLVMVisitor2: Visitor {
             lastValueLocation = llvm.WriteCompInst(node.Tag, savedValue, lastValueLocation);
             break;
         case NodeType.And:
-        case NodeType.Or:
+        case NodeType.Or: {
+            string ML = llvm.CreateBBLabel("testmid");
+            string TE = llvm.CreateBBLabel("testend");
+
+            LLVMValue result = llvm.AllocTempVar(CbType.Bool);
+
             node[0].Accept(this,data);
-            savedValue = lastValueLocation;
+            lastValueLocation = llvm.Coerce(lastValueLocation, node[0].Type, CbType.Bool);
+            llvm.Store(lastValueLocation, result);
+
+            if (node.Tag == NodeType.And) {
+                llvm.WriteCondBranch(lastValueLocation, ML, TE);
+            } else {
+                llvm.WriteCondBranch(lastValueLocation, TE, ML);
+            }
+
+            llvm.WriteLabel(ML);
+
             node[1].Accept(this,data);
-            // TODO
-            break;
+            lastValueLocation = llvm.Coerce(lastValueLocation, node[1].Type, CbType.Bool);
+            llvm.Store(lastValueLocation, result);
+
+            llvm.WriteBranch(TE);
+
+            llvm.WriteLabel(TE);
+
+            node.Type = CbType.Bool;
+            lastValueLocation = llvm.Dereference(result);
+
+            } break;
         default:
             throw new Exception("Unexpected tag: "+node.Tag);  
         }
