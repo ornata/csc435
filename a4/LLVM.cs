@@ -96,8 +96,9 @@ namespace FrontEnd
         }
 
         // For purposes of implementing Moessenboeck's SSA algorithm, we
-        // can divert generated LLVM code into a memory (as a big string).
+        // can divert generated LLVM code into memory (as a big string).
         private Stack<TextWriter> savedStreams = null;
+        private Stack<int> savedIndexNums = null;
 
         public void DivertOutput()
         {
@@ -106,6 +107,18 @@ namespace FrontEnd
             savedStreams.Push(ll);
             ll = new StringWriter();
         }
+
+        public void DiscardOutput()
+        {
+            if (savedStreams == null)
+                savedStreams = new Stack<TextWriter>();
+            if (savedIndexNums == null)
+                savedIndexNums = new Stack<int>();
+            savedStreams.Push(ll);
+            ll = TextWriter.Null;
+            savedIndexNums.Push(nextUnnamedIndex);
+        }
+
 
         // End the diversion to memory and return the diverted LLVM code
         // as a single very long string
@@ -118,6 +131,16 @@ namespace FrontEnd
             ll.Dispose();
             ll = savedStreams.Pop();
             return result;
+        }
+
+        public void ResumeOutput()
+        {
+            if (savedStreams == null || savedStreams.Count == 0)
+                throw new Exception("Resume not paired with a discard");
+            ll.Close();
+            ll.Dispose();
+            ll = savedStreams.Pop();
+            nextUnnamedIndex = savedIndexNums.Pop();
         }
 
         // Diverted LLVM code can be reinserted using this method

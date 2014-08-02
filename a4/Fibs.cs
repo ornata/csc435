@@ -94,11 +94,37 @@ class Fibs {
         }
     }
 
+    public static void WhileTest(int k) {
+        int i;
+        i = 0;
+        while (i < k) {
+            int j;
+            j = 0;
+            while (j < k) {
+                Console.Write(i);
+                Console.Write(",");
+                Console.WriteLine(j);
+                j++;
+            }
+            i++;
+        }
+
+        i = 0;
+        while (i < k) {
+            if (i < 7 && i > 2) {
+                        Console.WriteLine(i);
+            } else {
+                Console.WriteLine(k);
+            }
+            i++;
+        }
+    }
+
     public static void Main() {
         UnaryMinusTest(3);
         PlusPlusMinusMinusTest(3);
-		AndAndOrOrTest(1,0);
-
+                AndAndOrOrTest(1,0);
+        WhileTest(10);
         Fibs f;
         f = new Fibs();
         f.Run();

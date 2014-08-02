@@ -23,6 +23,16 @@ namespace FrontEnd
         int nextBBNumber = 0;       // used to number basic blocks
         int nextUnnamedIndex = -1;  // used to generate %0, %1, %2 ... sequences
 
+        public int GetNextBBNumber()
+        {
+            return nextBBNumber;
+        }
+        
+        public void SetNextBBNumber(int bbnumber)
+        {
+            nextBBNumber = bbnumber;
+        }
+
         // generates a unique name for a basic block label
         public string CreateBBLabel(string prefix="label")
         {

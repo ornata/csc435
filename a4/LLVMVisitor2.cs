@@ -208,7 +208,59 @@ public class LLVMVisitor2: Visitor {
             node[0].Accept(this,data);
             node[1].Accept(this,data);
             */
+            string headerLabel = llvm.CreateBBLabel("loopheader");
+            string bodyLabel = llvm.CreateBBLabel("loopbody");
+            string endLabel = llvm.CreateBBLabel("loopend");
+            string preHeader = lastBBLabel;
+
+            // generate branch to while loop header label and define it
+            llvm.WriteBranch(headerLabel);
+            llvm.WriteLabel(headerLabel);
+            lastBBLabel = headerLabel;
+
+            SymTab syAtTop = sy.Clone();
+
+           // we're going to have to pass through here again, don't emit code
+            llvm.DiscardOutput();
+
+			int oldNextBBNumber = llvm.GetNextBBNumber();
+
+            node[0].Accept(this, data); // visit test condition
+            llvm.WriteCondBranch(lastValueLocation, bodyLabel, endLabel);
             lastValueLocation = null;
+			llvm.WriteLabel(bodyLabel);
+			lastBBLabel = bodyLabel;
+
+            node[1].Accept(this, data); // visit body
+            llvm.WriteBranch(headerLabel);
+
+            // stop discarding llvm code
+            llvm.ResumeOutput();
+
+            llvm.SetNextBBNumber(oldNextBBNumber);
+
+            SymTab syBeforePhi = sy.Clone();
+            sy = llvm.Join(preHeader, syAtTop, lastBBLabel, syBeforePhi); // want phi assignments output to code
+            SymTab syAfterPhi = sy.Clone();
+
+            llvm.DivertOutput(); // we want to save this pass to alter it
+
+            node[0].Accept(this, data);
+            llvm.WriteCondBranch(lastValueLocation, bodyLabel, endLabel);
+            lastValueLocation = null;
+            llvm.WriteLabel(bodyLabel);
+            lastBBLabel = bodyLabel;
+
+            node[1].Accept(this, data);
+            llvm.WriteBranch(headerLabel);
+            llvm.WriteLabel(endLabel);
+            lastBBLabel = endLabel;
+
+            String output = llvm.UndivertOutput(); // save output code
+
+            llvm.InsertLoopCode(output, syBeforePhi, sy);
+            sy = syAfterPhi;
+
             break;
         case NodeType.Return:
             if (node[0] == null) {
@@ -396,6 +448,7 @@ public class LLVMVisitor2: Visitor {
             }
 
             llvm.WriteLabel(ML);
+            lastBBLabel = ML;
 
             node[1].Accept(this,data);
             lastValueLocation = llvm.Coerce(lastValueLocation, node[1].Type, CbType.Bool);
@@ -404,6 +457,7 @@ public class LLVMVisitor2: Visitor {
             llvm.WriteBranch(TE);
 
             llvm.WriteLabel(TE);
+            lastBBLabel = TE;
 
             node.Type = CbType.Bool;
             lastValueLocation = llvm.Dereference(result);
